@@ -50,5 +50,6 @@ int main(){
     }
     printf("\n The string is \n %s %s\n",str,str1);
     //printf("\nint1 %d int2 %d \n",i,i1);
+
     return 0;
 }
