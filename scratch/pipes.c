@@ -2,7 +2,8 @@
 #define STD_INPUT 0
 #define STD_OUTPUT 1 
 //pipeline(process1,process2)
-int main(int argc,char *argv[])
+
+
 {
     int fd[2];
     char *process1,*process2;
