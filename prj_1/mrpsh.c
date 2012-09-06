@@ -115,16 +115,23 @@ int main(int argc,char *argv[]) {
         if((pid = fork()) != 0) {
             // Parent process 
             waitpid(-1,&status,0);
+            if(WIFEXITED(status)) {
+                printf("Child %d exited properly\n",pid);
+            }else{
+                printf("Child %d NOT exited properly\n",pid);
+            }
         }else{
             if(debug_en) printf("child : %s cmd_address = %x \n",cmd_list[0],(int)&cmd_list);
             ret_val = execute(&cmd_list,0);
             if(ret_val == -1 ) {
                 perror("exe_error:");
+                return -1;
             }
         }
         free(line);
         //free(line_list);
     } 
+    return 0;
 }
 
 int is_empty(char *line){
