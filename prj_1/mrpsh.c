@@ -4,12 +4,13 @@
 // Fall 2012 , Group 3 
 // 
 //-Description   -------------------------------------------
-// This is the mail controler for mrpsh shell. 
+// This is the main controller for mrpsh shell. 
 //----------------------------------------------------------
 
 
 // Global signal declaration 
 static int dbg;
+static int debug_en;
 #define TRUE 1
 #define FALSE 0
 
@@ -20,16 +21,17 @@ static int dbg;
 #include<sys/stat.h>
 #include<sys/types.h>
 #include<fcntl.h>
-
+#include "exe.c"
 
 char ** get_non_empty_line(int fd);
 void show_prompt();
 char * read_command();
 
-static int debug_en;
 int main(int argc,char *argv[]) {
     int i,j,k;
     char **line_list;
+    char **cmd_list;
+    int ret_val=-1;
     // Get all the command line parameters 
     for(i=1;i<argc;i++){
         if(strcmp(argv[i],"-debug") == 0 ) {
@@ -40,6 +42,8 @@ int main(int argc,char *argv[]) {
     char *username;
     char *profile_file;
     int prf_fd;
+    int pid;
+    int status;
     profile_file = (char *) malloc(256);
     username = getenv("USER");
     if(debug_en == 1 ) printf("UserName = %s \n",username);
@@ -76,15 +80,18 @@ int main(int argc,char *argv[]) {
     // The program operates in 2 modes 
     // 0 - profile file reading mode 
     // 1 - command promt mode    
-    short int cmd_mode = 0 ; 
+    short int cmd_mode = 1 ; 
     line_list = get_non_empty_line(prf_fd);
     int line_num = 0 ;
     while(TRUE){
-        char ch;
         char* line;
         if(cmd_mode){
             show_prompt();
             line = read_command();
+            if(is_empty(line)){
+                free(line);
+                continue;
+            }
         }else{
             if(line_list[line_num] == NULL) {
                 // EOF Reached 
@@ -98,11 +105,41 @@ int main(int argc,char *argv[]) {
             }
         }
         if(debug_en) printf("Parse : %s\n",line);
+
+        // parser should give back cmd_list
+        // this is temporary arragement for testing 
+        cmd_list = (char **) malloc(4*sizeof(char *));
+        cmd_list[0] = line; 
+        cmd_list[1] = line; 
+        cmd_list[2] = line; 
+        if((pid = fork()) != 0) {
+            // Parent process 
+            waitpid(-1,&status,0);
+        }else{
+            if(debug_en) printf("child : %s cmd_address = %x \n",cmd_list[0],(int)&cmd_list);
+            ret_val = execute(&cmd_list,0);
+            if(ret_val == -1 ) {
+                perror("exe_error:");
+            }
+        }
         free(line);
         //free(line_list);
     } 
 }
 
+int is_empty(char *line){
+    int len;
+    int i;
+    int res=TRUE;
+    len  = strlen(line);
+    for(i=0;i<len;i++){
+        if(line[i] > 32 && line[i] < 127 ) {
+            res = FALSE ; 
+            break;
+        }
+    }
+    return res;
+}
 
 char ** get_non_empty_line(int fd){
     int empty_line = TRUE;
@@ -131,7 +168,8 @@ char ** get_non_empty_line(int fd){
            if(buf[i] == 0xA){
                //Line ends here
                idx = 0;
-               if(empty_line == FALSE) {
+               //if(empty_line == FALSE) {
+                 if(is_empty(str)==FALSE){
                     cmd_list[line_num++] = str;
                     str = (char *) malloc(256);
                     if(str == NULL) printf("Memory allocation failed\n");
@@ -139,9 +177,9 @@ char ** get_non_empty_line(int fd){
                empty_line = TRUE;
            }else{
                 str[idx++] = buf[i];
-                if(buf[i] > 32 && buf[i] < 127 ) {
-                    empty_line = FALSE;
-                }
+              //  if(buf[i] > 32 && buf[i] < 127 ) {
+              //      empty_line = FALSE;
+              //  }
            }
         }
         if (bytes_read < 256 ) eof = 1 ; 
@@ -164,7 +202,7 @@ char * read_command(){
         *(cmd+len) = ch;
         len++;
     }
-    *(cmd+len-1) = NULL;
+    *(cmd+len-1) = 0;
     //printf("scanDone %s",cmd);
     //printf("cmd = %x str = %x \n",cmd,str);
     return cmd;
