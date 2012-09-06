@@ -94,10 +94,10 @@ int execute_single(char * cmd){
     if(debug_en) printf("executing single %s\n",cmd); 
     cmd_list = (char **) malloc(count_spaces(cmd)*sizeof(char *));
     split(cmd,&cmd_list);
-    //printf("Input to execv\n");
-    //for(ret_val=0;cmd_list[ret_val] != NULL;ret_val++) {
-        //printf("cmd_list[%d] = %s\n",ret_val,cmd_list[ret_val]);
-    //} 
+    if(debug_en) printf("\nInput to execv\n");
+    for(ret_val=0;cmd_list[ret_val] != NULL;ret_val++) {
+        if(debug_en)printf("cmd_list[%d] = %s\n",ret_val,cmd_list[ret_val]);
+    } 
     ret_val = execv(cmd_list[0],cmd_list,0);
     if(ret_val == -1){
         perror("execution error:");
