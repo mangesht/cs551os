@@ -25,6 +25,7 @@ static char *PROMPT="MRP:>";
 #include<sys/types.h>
 #include<fcntl.h>
 #include "exe.c"
+#include "signal.c"
 
 char ** get_non_empty_line(int fd);
 void show_prompt();
@@ -35,6 +36,8 @@ int main(int argc,char *argv[]) {
     char **line_list;
     char **cmd_list;
     int ret_val=-1;
+    // Register interrupt handler 
+    register_signal();
     // Get all the command line parameters 
     for(i=1;i<argc;i++){
         if(strcmp(argv[i],"-debug") == 0 ) {
@@ -113,13 +116,22 @@ int main(int argc,char *argv[]) {
 
         // parser should give back cmd_list
         // this is temporary arragement for testing 
-        cmd_list = (char **) malloc(4*sizeof(char *));
-        cmd_list[0] = line; 
-        cmd_list[1] = "&"; 
+        cmd_list = (char **) malloc(18*sizeof(char *));
+        //cmd_list[0] = line; 
+        cmd_list[0] = "if"; 
+        cmd_list[1] = line; 
+        cmd_list[2] = "then"; 
+        cmd_list[3] = "/bin/ls"; 
+        cmd_list[4] = "else"; 
+        cmd_list[5] = "/bin/ls -al"; 
+        cmd_list[6] = "fi"; 
+        cmd_list[7] = "/bin/ls"; 
+        cmd_list[8] = "&"; 
         //cmd_list[2] = "outfile.txt";
         
         int len=0; 
         while(cmd_list[len]!=NULL) len++;
+        //printf("Len of command %d \n",len);
         if(strcmp(cmd_list[len-1],"&")==0) 
             send_bg = 1 ;
 
@@ -144,7 +156,9 @@ int main(int argc,char *argv[]) {
             ret_val = execute(&cmd_list,0);
             if(ret_val == -1 ) {
                 perror("exe_error:");
-                return -1;
+                return 0;
+            }else{
+                return 1;
             }
         }
         free(line);
