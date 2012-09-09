@@ -1,4 +1,6 @@
+static int debug_en;
 #include "signal.c"
+
 
 int main () 
 {
