@@ -7,14 +7,16 @@
 // The function execute and execute single perform the system calls required to execute the user asked functions.
 //----------------------------------------------------------
 
-void set_alias(char * key,char *val){
+int set_alias(char * key,char *val){
         //add functionality 
         printf("\n");
+        return 0;
 }
 
-void set_config(char * key,char *val){
+int set_config(char * key,char *val){
         //add functionality 
         printf("\n");
+        return 0;
 }
 int count_spaces(char *str){
     int skip = 0 ; 
@@ -98,11 +100,21 @@ int execute_single(char * cmd){
     for(ret_val=0;cmd_list[ret_val] != NULL;ret_val++) {
         if(debug_en)printf("cmd_list[%d] = %s\n",ret_val,cmd_list[ret_val]);
     } 
-    ret_val = execv(cmd_list[0],cmd_list,0);
+    if(strcmp(cmd_list[0],"cd")==0) {
+        if(debug_en) printf("Chaning directory\n");
+        ret_val = chdir(cmd_list[1]);
+    }else if(strcmp(cmd_list[0],"alias")==0) {
+        set_alias(cmd_list[1],cmd_list[3]);
+    }else if(strcmp(cmd_list[0],"set")==0) {
+        // shell specific configurations
+        set_config(cmd_list[1],cmd_list[3]);
+    }else{
+        ret_val = execv(cmd_list[0],cmd_list,0);
+    }
     if(ret_val == -1){
         perror("execution error:");
+        ret_val = 0 ;
     }
-    printf("Give us chance to free mem\n");
     return ret_val;
 }
 int execute(char ***cmd_list_ptr,int start_idx){
@@ -113,14 +125,30 @@ int execute(char ***cmd_list_ptr,int start_idx){
     cmd_list = *cmd_list_ptr;
     
     if(debug_en) printf("executing %s\n",cmd_list[start_idx]); 
-    if(strncmp(cmd_list[start_idx+1],">",1)==0 || strncmp(cmd_list[start_idx+1],"|",1)==0) { 
-        if(strncmp(cmd_list[start_idx+1],">",1)==0){
+    if(strcmp(cmd_list[start_idx+1],">")==0 || strcmp(cmd_list[start_idx+1],"|")==0) { 
+        if(debug_en) printf("processing operator %s \n",cmd_list[start_idx+1]);
+        if(strcmp(cmd_list[start_idx+1],">")==0){
+            int out_fd;
+            if(debug_en) printf("processing redirection operator %s \n",cmd_list[start_idx+1]);
             // Redirection operator
-        }else if(strncmp(cmd_list[start_idx+1],"|",1)==0){
+            //out_fd = open(cmd_list[start_idx+2],O_CREAT,0x777);
+            out_fd = open("outfile.txt",O_CREAT|O_WRONLY,S_IRUSR |S_IWUSR);
+            if(out_fd == -1 ) {
+                if(debug_en) printf("Error Opening file :%s:",cmd_list[start_idx+2]);
+
+                // Error in file opening
+                perror("error_redirect:");
+                return -1;
+            }
+            close(STD_OUTPUT);
+            dup(out_fd);
+            close(out_fd);
+            ret_val=execute_single(cmd_list[start_idx]);
+        }else if(strcmp(cmd_list[start_idx+1],"|")==0){
             // pipe operator
         }
         ret_val = execute_single(cmd_list[start_idx+2]);
-    }else if(strncmp(cmd_list[start_idx],"if",2)==0) {
+    }else if(strcmp(cmd_list[start_idx],"if")==0) {
         // Process it as if then else fi
         ret_val = execute(&cmd_list,start_idx+1);
         // search for else
@@ -128,10 +156,10 @@ int execute(char ***cmd_list_ptr,int start_idx){
         int fi_locn = -1;
         i = start_idx + 1 ;
         while(cmd_list[i] != NULL){
-            if(strncmp(cmd_list[i],"else",4)==0) { 
+            if(strcmp(cmd_list[i],"else")==0) { 
                 // else found 
                 else_locn = i ; 
-            }else if(strncmp(cmd_list[i],"fi",2)==0){
+            }else if(strcmp(cmd_list[i],"fi")==0){
                 // End encountered
                 fi_locn = i;
                 break;
@@ -151,11 +179,8 @@ int execute(char ***cmd_list_ptr,int start_idx){
             cmd_list[next_cmd_locn++] = cmd_list[i];
         }
         cmd_list[next_cmd_locn++] = NULL;
-    }else if(strncmp(cmd_list[start_idx],"alias",5)==0) {
-        set_alias(cmd_list[start_idx+1],cmd_list[start_idx+3]);
-    }else if(strncmp(cmd_list[start_idx],"set",3)==0) {
-        // shell specific configurations
-        set_config(cmd_list[start_idx+1],cmd_list[start_idx+3]);
+    }else if(strcmp(cmd_list[start_idx],"cd")==0) {
+        // Change directory
     }else{
         if(debug_en) printf("No match elsewhere\n");
         ret_val = execute_single(cmd_list[start_idx]);
