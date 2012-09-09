@@ -11,8 +11,11 @@
 // Global signal declaration 
 static int dbg;
 static int debug_en;
+static char *PROMPT="MRP:>";
 #define TRUE 1
 #define FALSE 0
+#define STD_INPUT 0
+#define STD_OUTPUT 1
 
 #include<stdio.h>
 #include<stdlib.h>
@@ -68,7 +71,7 @@ int main(int argc,char *argv[]) {
             printf("Do you want shell to creat default (y/n) ");
             scanf("%c",&ch);
             if(ch != 'n' && ch != 'N') {
-                prf_fd = open(profile_file,O_CREAT);
+                prf_fd = open(profile_file,O_CREAT,S_IRUSR |S_IWUSR);
             }
         }
     } 
@@ -83,8 +86,10 @@ int main(int argc,char *argv[]) {
     short int cmd_mode = 1 ; 
     line_list = get_non_empty_line(prf_fd);
     int line_num = 0 ;
+    int send_bg = 0;
     while(TRUE){
         char* line;
+        send_bg = 0 ; 
         if(cmd_mode){
             show_prompt();
             line = read_command();
@@ -110,15 +115,29 @@ int main(int argc,char *argv[]) {
         // this is temporary arragement for testing 
         cmd_list = (char **) malloc(4*sizeof(char *));
         cmd_list[0] = line; 
-        cmd_list[1] = line; 
-        cmd_list[2] = line; 
-        if((pid = fork()) != 0) {
+        cmd_list[1] = "&"; 
+        //cmd_list[2] = "outfile.txt";
+        
+        int len=0; 
+        while(cmd_list[len]!=NULL) len++;
+        if(strcmp(cmd_list[len-1],"&")==0) 
+            send_bg = 1 ;
+
+        pid = fork();
+        if(pid == -1 ) {
+            perror("fork_error:");
+            exit(-1);
+        }else if(pid != 0) {
             // Parent process 
-            waitpid(-1,&status,0);
-            if(WIFEXITED(status)) {
-                printf("Child %d exited properly\n",pid);
+            if(send_bg == 0 ) { 
+                waitpid(-1,&status,0);
+                if(WIFEXITED(status)) {
+                    if(debug_en) printf("Child %d exited properly\n",pid);
+                }else{
+                    if(debug_en) printf("Child %d NOT exited properly\n",pid);
+                }
             }else{
-                printf("Child %d NOT exited properly\n",pid);
+                printf("bg %d\n",pid);
             }
         }else{
             if(debug_en) printf("child : %s cmd_address = %x \n",cmd_list[0],(int)&cmd_list);
@@ -216,5 +235,6 @@ char * read_command(){
 }
 
 void show_prompt(){
-    printf(":>");
+    //printf(":>");
+    printf("%s",PROMPT);
 }
