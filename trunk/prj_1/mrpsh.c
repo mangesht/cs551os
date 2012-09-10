@@ -40,6 +40,7 @@ int main(int argc,char *argv[]) {
     char **line_list;
     char **cmd_list;
     int ret_val=-1;
+    int len=0; 
     // Register interrupt handler 
     register_signal();
     // Get all the command line parameters 
@@ -94,6 +95,7 @@ int main(int argc,char *argv[]) {
     line_list = get_non_empty_line(prf_fd);
     int line_num = 0 ;
     int send_bg = 0;
+    cmd_list = (char **) malloc(18*sizeof(char *));
     while(TRUE){
         char* line;
         send_bg = 0 ; 
@@ -119,7 +121,9 @@ int main(int argc,char *argv[]) {
         if(debug_en) printf("Parse : %s\n",line);
 
         // parser should give back cmd_list
-//        cmd_list = (char **) malloc(18*sizeof(char *));
+	for(i=0;i<18;i++){
+	    cmd_list[i] = NULL;
+	}
         parseCmd(line,cmd_list);
         // this is temporary arragement for testing 
     //    cmd_list[0] = line; 
@@ -134,10 +138,14 @@ int main(int argc,char *argv[]) {
        // cmd_list[8] = "&"; 
         //cmd_list[2] = "outfile.txt";
         */  
-        int len=0; 
         int no_fork = 0;
-        while(cmd_list[len]!=NULL) len++;
-        //printf("Len of command %d \n",len);
+	if(debug_en) printf("Parser output \n");
+	len = 0;
+        while(cmd_list[len]!=NULL){
+	    if(debug_en) printf("%s \n",cmd_list[len]);
+	    len++;
+	}
+        if(debug_en) printf("Len of command %d \n",len);
         if(strcmp(cmd_list[len-1],"&")==0) 
             send_bg = 1 ;
         if(
@@ -180,6 +188,10 @@ int main(int argc,char *argv[]) {
         }
         free(line);
         //free(line_list);
+	for(i=0;i<len;i++){
+	    free(cmd_list[i]);
+	}
+//	free(cmd_list);
     } 
     return 0;
 }

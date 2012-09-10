@@ -189,7 +189,8 @@ int execute(char ***cmd_list_ptr,int start_idx){
             if(debug_en) printf("processing redirection operator %s \n",cmd_list[start_idx+1]);
             // Redirection operator
             //out_fd = open(cmd_list[start_idx+2],O_CREAT,0x777);
-            out_fd = open("outfile.txt",O_CREAT|O_WRONLY,S_IRUSR |S_IWUSR);
+            //out_fd = open("outfile.txt",O_CREAT|O_WRONLY,S_IRUSR |S_IWUSR);
+            out_fd = open(cmd_list[start_idx+2],O_CREAT|O_WRONLY,S_IRUSR |S_IWUSR);
             if(out_fd == -1 ) {
                 if(debug_en) printf("Error Opening file :%s:",cmd_list[start_idx+2]);
 
