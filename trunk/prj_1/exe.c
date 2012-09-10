@@ -163,9 +163,15 @@ int execute(char ***cmd_list_ptr,int start_idx){
     int ret_val;
     int i;
     int next_cmd_locn = start_idx;
+    int len;
     cmd_list = *cmd_list_ptr;
-    
+    len = 0 ;
     if(debug_en) printf("executing %s\n",cmd_list[start_idx]); 
+    while(cmd_list[len] != NULL) { 
+        len++;
+    }
+    printf("Len = %d \n",len); 
+    if(len > 2 ) {
     if(strcmp(cmd_list[start_idx+1],">")==0 || strcmp(cmd_list[start_idx+1],"|")==0) { 
         if(debug_en) printf("processing operator %s \n",cmd_list[start_idx+1]);
         if(strcmp(cmd_list[start_idx+1],">")==0){
@@ -229,6 +235,10 @@ int execute(char ***cmd_list_ptr,int start_idx){
         // Change directory
     }else{
         if(debug_en) printf("No match elsewhere\n");
+        ret_val = execute_single(cmd_list[start_idx]);
+    }
+    }else{
+        if(debug_en) printf("Len smaller \n");
         ret_val = execute_single(cmd_list[start_idx]);
     }
 }
