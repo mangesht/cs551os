@@ -122,7 +122,7 @@ int main(int argc,char *argv[]) {
 //        cmd_list = (char **) malloc(18*sizeof(char *));
         parseCmd(line,cmd_list);
         // this is temporary arragement for testing 
-        cmd_list[0] = line; 
+    //    cmd_list[0] = line; 
      /*   cmd_list[0] = "if"; 
         cmd_list[1] = line; 
         cmd_list[2] = "then"; 
