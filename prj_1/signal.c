@@ -7,21 +7,17 @@
 // Function module to handle Control-C Signal Handler ---------
 //-------------------------------------------------------------
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <signal.h>
-#include <setjmp.h>
+//#include <setjmp.h>
 
-static int debug_en;
 // GLOBAL VARIABLES
-jmp_buf env;
-int state;
+//jmp_buf env;
+//int state;
 
 void signal_handler( int signal );
 
 void register_signal(){
   signal (SIGINT, signal_handler);
-  state = setjmp ( env );
+  //state = setjmp ( env );
 
 }
 
@@ -44,13 +40,13 @@ void signal_handler( int signal )
       if ( ch == 'y' || ch == 'Y')
       {
          // call cleanUp function to free any allocated memory
-         exit (0);
+         exit (EXIT_SUCCESS);
       }
       else  
       {
          if ( ch != '\n')
             while ( (ch = getchar()) != '\n');
-         longjmp (env, state);
+         //longjmp (env, state);
       }
    }
    

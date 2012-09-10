@@ -73,8 +73,7 @@ void split(char *str,char *** str_list_ptr){
             //printf(" m1 "); 
             skip = skip == 1 ? 0 : 1 ; 
         }else if((skip == 0 && str[i] == 0x20)){
-            //*(tstr+idx) = 0;
-            //*(str_list+line_num) = tstr;
+            tstr[idx++] = '\0';
             str_list[line_num]= tstr;
             line_num++;
             idx = 0 ;
@@ -83,7 +82,10 @@ void split(char *str,char *** str_list_ptr){
             if(tstr == NULL) printf("Alloc error");
         }else if(i==len-1){
             *(tstr+idx) = str[i];
+            idx++;
+            tstr[idx++] = '\0';
             str_list[line_num]= tstr;
+            line_num++;
         }else{
             *(tstr+idx) = str[i];
             idx++;
@@ -91,6 +93,7 @@ void split(char *str,char *** str_list_ptr){
             //printf("%d ",i);
         }
     }
+    str_list[line_num] = NULL;
 }
 int execute_single(char * cmd){
     char **cmd_list;
@@ -101,7 +104,8 @@ int execute_single(char * cmd){
     if(debug_en) printf("\nInput to execv\n");
     for(ret_val=0;cmd_list[ret_val] != NULL;ret_val++) {
         if(debug_en)printf("cmd_list[%d] = %s\n",ret_val,cmd_list[ret_val]);
-    } 
+    }
+    
     if(strcmp(cmd_list[0],"cd")==0) {
         if(debug_en) printf("Chaning directory\n");
         ret_val = chdir(cmd_list[1]);
@@ -110,7 +114,12 @@ int execute_single(char * cmd){
     }else if(strcmp(cmd_list[0],"set")==0) {
         // shell specific configurations
        ret_val =  set_config(cmd_list[1],cmd_list[3]);
+    }else if(strcmp(cmd_list[0],"exit")==0) {
+        exit(EXIT_SUCCESS);
     }else{
+         ret_val = execv(cmd_list[0],cmd_list);
+    }
+         /*
         // To get return value from this process , we will fork this one , if child process runs successfully it wont return anything else it returns erorr value . We pass this value using a pipe
         int mb[2];
         int pid;
@@ -152,6 +161,7 @@ int execute_single(char * cmd){
             }
         }
     }
+    */
     if(ret_val == -1){
         perror("execution error:");
         ret_val = 0 ;
@@ -170,7 +180,7 @@ int execute(char ***cmd_list_ptr,int start_idx){
     while(cmd_list[len] != NULL) { 
         len++;
     }
-    printf("Len = %d \n",len); 
+    //printf("Len = %d \n",len); 
     if(len > 2 ) {
     if(strcmp(cmd_list[start_idx+1],">")==0 || strcmp(cmd_list[start_idx+1],"|")==0) { 
         if(debug_en) printf("processing operator %s \n",cmd_list[start_idx+1]);
@@ -198,7 +208,49 @@ int execute(char ***cmd_list_ptr,int start_idx){
     }else if(strcmp(cmd_list[start_idx],"if")==0) {
         // Process it as if then else fi
         if(debug_en) printf("Processing if\n");
-        ret_val = execute(&cmd_list,start_idx+1);
+      // To get return value from this process , we will fork this one , if child process runs successfully it wont return anything else it returns erorr value . We pass this value using a pipe
+        int mb[2];
+        int pid;
+        int pipe_get_num;
+        if(pipe(&mb[0]) == -1) {
+            perror("pipeing_error:");
+            return 0;
+        }
+        pipe_get_num = 0 ; 
+        pid = fork();
+        printf("pid = %d \n",pid);
+        if(pid == -1 ) {
+            perror("forking_error:");
+            return 0;
+        }else if(pid != 0) {
+            // Parent process 
+            char buf;
+            int status;
+            close(mb[PIPE_WRITE]);
+            waitpid(pid,&status,0);
+            pipe_get_num = read(mb[PIPE_READ],&buf,1); 
+            close(mb[PIPE_READ]);
+            if(pipe_get_num > 0){
+                ret_val = 0 ;
+            }else{
+                ret_val = 1 ; 
+            }
+        }else{
+            char str[] = "Fail";
+            close(mb[PIPE_READ]);
+            //ret_val = execv(cmd_list[0],cmd_list,0);
+            ret_val = execute(&cmd_list,start_idx+1);
+            write(mb[PIPE_WRITE],str,3);
+            close(mb[PIPE_WRITE]);
+            if(ret_val == -1 ) {
+                perror("run error:");
+                exit(1);
+            }else{
+                return 1;
+            }
+        }
+
+        //ret_val = execute(&cmd_list,start_idx+1);
         // search for else
         int else_locn = -1;
         int fi_locn = -1;
