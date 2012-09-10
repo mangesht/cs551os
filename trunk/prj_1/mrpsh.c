@@ -1,6 +1,6 @@
 //----------------------------------------------------------
 // Illinois Institute of Technology, Chicago
-// CS 551 Implementatiom of Operating Systems
+// CS 551 Implementation of Operating Systems
 // Fall 2012 , Group 3 
 // 
 //-Description   -------------------------------------------
@@ -29,6 +29,7 @@ static char *PROMPT="MRP:>";
 #include<fcntl.h>
 #include "exe.c"
 #include "signal.c"
+#include "parser.c"
 
 char ** get_non_empty_line(int fd);
 void show_prompt();
@@ -118,9 +119,10 @@ int main(int argc,char *argv[]) {
         if(debug_en) printf("Parse : %s\n",line);
 
         // parser should give back cmd_list
-        // this is temporary arragement for testing 
         cmd_list = (char **) malloc(18*sizeof(char *));
-        cmd_list[0] = line; 
+        parseCmd(line,cmd_list);
+        // this is temporary arragement for testing 
+     //   cmd_list[0] = line; 
      /*   cmd_list[0] = "if"; 
         cmd_list[1] = line; 
         cmd_list[2] = "then"; 
