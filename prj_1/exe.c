@@ -99,7 +99,7 @@ int execute_single(char * cmd){
     char **cmd_list;
     int ret_val=0;
     if(debug_en) printf("executing single %s\n",cmd); 
-    cmd_list = (char **) malloc(count_spaces(cmd)*sizeof(char *));
+    cmd_list = (char **) malloc((count_spaces(cmd)+2)*sizeof(char *));
     split(cmd,&cmd_list);
     if(debug_en) printf("\nInput to execv\n");
     for(ret_val=0;cmd_list[ret_val] != NULL;ret_val++) {
