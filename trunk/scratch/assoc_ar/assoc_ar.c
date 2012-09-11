@@ -12,9 +12,9 @@ void init(assoc_ar *ar){
 }
 
 void print_array(assoc_ar *ar){
-  int i,j;
+  int i,j=0;
   for(i=0;i<8;i++){
-    
+    printf("value = %d \n",ar.key_val[i][j]);
   }
  
 }
@@ -25,6 +25,7 @@ char * read_command(){
     char * cmd = (char *) malloc(256);
     assoc_ar ar;
     init(&ar);
+    print_array(&ar)
     ch = 0 ; 
     while(ch!=10){
         ret_val = scanf("%c",&ch); 
