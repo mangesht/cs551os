@@ -27,6 +27,7 @@ static char *PROMPT="MRP:>";
 #include<unistd.h>
 #include<signal.h>
 #include<fcntl.h>
+#include "assoc_ar.c"
 #include "exe.c"
 #include "signal.c"
 #include "parser.c"
@@ -41,6 +42,8 @@ int main(int argc,char *argv[]) {
     char **cmd_list;
     int ret_val=-1;
     int len=0; 
+   struct assoc_ar alias_s;
+
     // Register interrupt handler 
     register_signal();
     // Get all the command line parameters 
@@ -55,6 +58,10 @@ int main(int argc,char *argv[]) {
     int prf_fd;
     int pid;
     int status;
+
+   // Intialize the alias hash 
+    init(&alias_s);
+ 
     profile_file = (char *) malloc(256);
     username = getenv("USER");
     if(debug_en == 1 ) printf("UserName = %s \n",username);
