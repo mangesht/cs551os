@@ -65,7 +65,9 @@ int add(struct assoc_ar *ar,char *key,char *val){
                 p = strcpy(ar->key_tbl[i],key);
                 p = strcpy(ar->val_tbl[i],val);
                 ar->ov_tbl_size++;
-                 
+                if(ar->ov_tbl_size >= ar->max_ov_tbl_size){
+                    printf("Hash Table full. Contact your provider for resizing request\n");
+                } 
             }else{
                 // Entry is already present , replace
                 p = strcpy(ar->val_tbl[i],val);
