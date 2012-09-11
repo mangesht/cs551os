@@ -1,20 +1,21 @@
 #include<stdio.h>
-
+#include<stdlib.h>
 
 struct assoc_ar{
-    int cur_size = 256;
+    int cur_size;
     char **key_val;
 };
 
-void init(assoc_ar *ar){
-   ar.key_val = (char **)calloc(256,256);
+void init(struct assoc_ar* ar){
+   ar->cur_size = 256;
+   ar->key_val = (char **)calloc(256,256);
 
 }
 
-void print_array(assoc_ar *ar){
+void print_array(struct assoc_ar* ar){
   int i,j=0;
   for(i=0;i<8;i++){
-    printf("value = %d \n",ar.key_val[i][j]);
+    printf("value = %s\n",ar->key_val[i]);
   }
  
 }
@@ -23,9 +24,9 @@ char * read_command(){
     int len = 0;
     int ret_val;
     char * cmd = (char *) malloc(256);
-    assoc_ar ar;
+    struct assoc_ar ar;
     init(&ar);
-    print_array(&ar)
+    print_array(&ar);
     ch = 0 ; 
     while(ch!=10){
         ret_val = scanf("%c",&ch); 
