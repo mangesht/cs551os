@@ -66,10 +66,10 @@ int main(int argc,char *argv[]) {
     char **cmd_list;
     int ret_val=-1;
     int len=0; 
+    int exit_reg_once = 0 ; 
 
     // Register interrupt handler 
     register_signal();
-     i = atexit(bye);
     // Get all the command line parameters 
     for(i=1;i<argc;i++){
         if(strcmp(argv[i],"-debug") == 0 ) {
@@ -159,9 +159,9 @@ int main(int argc,char *argv[]) {
                 cmd_mode++ ; 
                 if(cmd_mode == 1) {
                     if(debug_en) printf("Reading alias\n");
-                    for(i=0;i<256;i++)
-                        free((line_list+i));
-                    free(line_list);
+                   // for(i=0;i<256;i++)
+                        //free((line_list+i));
+                    //free(line_list);
                     get_non_empty_line(alias_fd,&line_list);
                     if(debug_en) printf("Reading alias line_0 = %s\n",line_list[0]);
                     line_num = 0 ;
@@ -228,6 +228,10 @@ int main(int argc,char *argv[]) {
             exit(EXIT_FAILURE);
         }else if(pid != 0) {
             // Parent process 
+	    if(exit_reg_once == 0 ) { 
+                i	 = atexit(bye);
+		exit_reg_once = 1 ;
+	    }
             if(send_bg == 0 ) { 
                 waitpid(-1,&status,0);
                 if(WIFEXITED(status)) {
@@ -312,7 +316,7 @@ void get_non_empty_line(int fd,char *** line_list){
         }
         if (bytes_read < 256 ) eof = 1 ; 
   }
-  free(buf);
+  //free(buf);
   *line_list =  cmd_list;    
 }
 
