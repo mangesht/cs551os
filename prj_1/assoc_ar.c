@@ -108,6 +108,28 @@ char * get(struct assoc_ar *ar,char *key){
     }
     return ret_val;
 }
+void write_alias(struct assoc_ar *ar,int fd){
+    char *p;
+    int i;
+    printf("Processing write alias\n");
+    for(i=0;i<ar->max_cur_size;i++){
+        if(ar->hit_idx[i] == -1) {
+            // Empty Location
+        }else{
+            // alias=6+spalce 7 , null 8  newline 9  = 10 
+            printf("Processing %dth write alias\n",i);
+            p = (char *) malloc((10+strlen(ar->key_tbl[i])+strlen(ar->val_tbl[i])) * sizeof(char));
+            strcpy(p,"alias ");
+            strcat(p,ar->key_tbl[i]);
+            strcat(p,"=");
+            strcat(p,ar->val_tbl[i]);
+            strcat(p,"\n");
+            write(fd,p,strlen(p));
+            printf("%s",p);
+        }
+    }
+//    close(fd);
+}
 
 void print_array(struct assoc_ar* ar){
   int i,j=0;
