@@ -28,6 +28,10 @@ static char *PROMPT="MRP:>";
 #include<signal.h>
 #include<fcntl.h>
 #include "assoc_ar.c"
+
+struct assoc_ar alias_s;
+
+
 #include "exe.c"
 #include "signal.c"
 #include "parser.c"
@@ -36,16 +40,36 @@ char ** get_non_empty_line(int fd);
 void show_prompt();
 char * read_command();
 
+int alias_fd;
+char *alias_file;
+
+void bye(){
+        char *p;
+        printf("Exit called \n");
+        p = (char *) malloc(1);
+        lseek(alias_fd,0,SEEK_SET);
+        alias_fd = open(alias_file,O_TRUNC |O_RDWR);
+//,S_IRUSR |S_IWUSR);
+        write_alias(&alias_s,alias_fd);
+ //       p[0] = EOF;
+ //       p[1] = 0;
+ //       write(alias_fd,p,2);
+        //write(alias_fd,4,1);
+        
+        close(alias_fd);
+        free(p);
+}
+
 int main(int argc,char *argv[]) {
     int i,j,k;
     char **line_list;
     char **cmd_list;
     int ret_val=-1;
     int len=0; 
-   struct assoc_ar alias_s;
 
     // Register interrupt handler 
     register_signal();
+     i = atexit(bye);
     // Get all the command line parameters 
     for(i=1;i<argc;i++){
         if(strcmp(argv[i],"-debug") == 0 ) {
@@ -55,22 +79,30 @@ int main(int argc,char *argv[]) {
     // Get the user name and decide the path for PROFILE file
     char *username;
     char *profile_file;
+    char *profile_path;
     int prf_fd;
     int pid;
     int status;
 
    // Intialize the alias hash 
+    if(debug_en) printf("Initializing hash \n");
     init(&alias_s);
+    if(debug_en) printf("Done Initializing hash \n");
  
     profile_file = (char *) malloc(256);
+    profile_path = (char *) malloc(256);
+    alias_file = (char *) malloc(256);
     username = getenv("USER");
     if(debug_en == 1 ) printf("UserName = %s \n",username);
     if(strcmp(username,"root")==0) { 
         // user is root
         strcpy(profile_file,"/root/PROFILE");
+        strcpy(profile_path,"/root/");
     }else{
         strcpy(profile_file,"/home/");
         strcat(profile_file,username);
+        strcpy(profile_path,profile_file);
+        strcat(profile_path,"/");
         strcat(profile_file,"/PROFILE");
     }
     if(debug_en) printf("Profile Path = %s \n",profile_file);
@@ -86,7 +118,7 @@ int main(int argc,char *argv[]) {
             printf("Do you want shell to creat default (y/n) ");
             scanf("%c",&ch);
             if(ch != 'n' && ch != 'N') {
-                prf_fd = open(profile_file,O_CREAT,S_IRUSR |S_IWUSR);
+                prf_fd =open(profile_file,O_CREAT,S_IRUSR |S_IWUSR); 
             }
         }
     } 
@@ -94,11 +126,18 @@ int main(int argc,char *argv[]) {
         perror("error");
         printf("Could not read PROFILE. Continuing with default options\n");
     }
-
+    
+    strcpy(alias_file,profile_path);
+    strcat(alias_file,"alias");
+    alias_fd = open(alias_file,O_CREAT |O_RDWR,S_IRUSR |S_IWUSR);
+    if(alias_fd == -1){
+        perror("error:");
+        printf("Aliases will not be persistant \n");
+    }
     // The program operates in 2 modes 
     // 0 - profile file reading mode 
     // 1 - command promt mode    
-    short int cmd_mode = 1 ; 
+    short int cmd_mode = 0 ; 
     line_list = get_non_empty_line(prf_fd);
     int line_num = 0 ;
     int send_bg = 0;
@@ -106,7 +145,7 @@ int main(int argc,char *argv[]) {
     while(TRUE){
         char* line;
         send_bg = 0 ; 
-        if(cmd_mode){
+        if(cmd_mode == 2 ){
             show_prompt();
             line = read_command();
             if(is_empty(line)){
@@ -117,8 +156,17 @@ int main(int argc,char *argv[]) {
             if(line_list[line_num] == NULL) {
                 // EOF Reached 
                 if(debug_en) printf("Eof reached in PROFILE");
-                cmd_mode = 1 ; 
-                free(line_list);
+                cmd_mode++ ; 
+                if(cmd_mode == 1) {
+                    if(debug_en) printf("Reading alias\n");
+                    line_list = get_non_empty_line(alias_fd);
+                    if(debug_en) printf("Reading alias line_0 = %s\n",line_list[0]);
+                    line_num = 0 ;
+                }else{
+                    write_alias(&alias_s,STD_OUTPUT);
+                    close(alias_fd);
+                    free(line_list);
+                }
                 continue;
             }else{
                 line = line_list[line_num];
@@ -128,9 +176,9 @@ int main(int argc,char *argv[]) {
         if(debug_en) printf("Parse : %s\n",line);
 
         // parser should give back cmd_list
-	for(i=0;i<18;i++){
-	    cmd_list[i] = NULL;
-	}
+    	for(i=0;i<18;i++){
+	        cmd_list[i] = NULL;
+    	}
         parseCmd(line,cmd_list);
         // this is temporary arragement for testing 
     //    cmd_list[0] = line; 
@@ -149,7 +197,7 @@ int main(int argc,char *argv[]) {
 	if(debug_en) printf("Parser output \n");
 	len = 0;
         while(cmd_list[len]!=NULL){
-	    if(debug_en) printf("%s \n",cmd_list[len]);
+	    if(debug_en) printf("cmd[%d] =%s \n",len,cmd_list[len]);
 	    len++;
 	}
         if(debug_en) printf("Len of command %d \n",len);
@@ -158,10 +206,15 @@ int main(int argc,char *argv[]) {
         if(
             (strncmp(cmd_list[0],"cd ",3)==0) ||
             (strncmp(cmd_list[0],"set ",4)==0) ||
-            (strncmp(cmd_list[0],"alias ",6)==0) ||
+            (strcmp(cmd_list[0],"alias")==0) ||
             (strcmp(cmd_list[0],"exit"))==0){
             if(debug_en) printf("cd matched");
             no_fork = 1 ; 
+
+            if(strcmp(cmd_list[0],"alias")==0) {
+                ret_val = set_alias(cmd_list[1],cmd_list[2]);
+                continue;
+            }
         }
         if(no_fork == 1 ) {
             ret_val = execute(&cmd_list,0);
@@ -169,7 +222,7 @@ int main(int argc,char *argv[]) {
         pid = fork();
         if(pid == -1 ) {
             perror("fork_error:");
-            exit(-1);
+            exit(EXIT_FAILURE);
         }else if(pid != 0) {
             // Parent process 
             if(send_bg == 0 ) { 
@@ -231,7 +284,7 @@ char ** get_non_empty_line(int fd){
     if(cmd_list == NULL) {
         printf("Memory allocation failed\n");
         perror("error");
-        exit(-1);
+        exit(EXIT_FAILURE);
     }
     buf = (char *) malloc(256);
     while(!eof){
@@ -288,3 +341,5 @@ void show_prompt(){
     //printf(":>");
     printf("%s",PROMPT);
 }
+
+

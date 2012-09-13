@@ -9,10 +9,13 @@
 
 #define PIPE_READ 0 
 #define PIPE_WRITE 1 
+
 int set_alias(char * key,char *val){
         //add functionality 
+        int r;
         printf("\n");
-        return 0;
+        r = add(&alias_s,key,val);
+        return r;
 }
 
 int set_config(char * key,char *val){
@@ -109,8 +112,6 @@ int execute_single(char * cmd){
     if(strcmp(cmd_list[0],"cd")==0) {
         if(debug_en) printf("Chaning directory\n");
         ret_val = chdir(cmd_list[1]);
-    }else if(strcmp(cmd_list[0],"alias")==0) {
-        ret_val = set_alias(cmd_list[1],cmd_list[3]);
     }else if(strcmp(cmd_list[0],"set")==0) {
         // shell specific configurations
        ret_val =  set_config(cmd_list[1],cmd_list[3]);
@@ -119,50 +120,7 @@ int execute_single(char * cmd){
     }else{
          ret_val = execv(cmd_list[0],cmd_list);
     }
-         /*
-        // To get return value from this process , we will fork this one , if child process runs successfully it wont return anything else it returns erorr value . We pass this value using a pipe
-        int mb[2];
-        int pid;
-        int pipe_get_num;
-        if(pipe(&mb[0]) == -1) {
-            perror("pipeing_error:");
-            return 0;
-        }
-        pipe_get_num = 0 ; 
-        pid = fork();
-        printf("pid = %d \n",pid);
-        if(pid == -1 ) {
-            perror("forking_error:");
-            return 0;
-        }else if(pid != 0) {
-            // Parent process 
-            char buf;
-            int status;
-            close(mb[PIPE_WRITE]);
-            waitpid(pid,&status,0);
-            pipe_get_num = read(mb[PIPE_READ],&buf,1); 
-            close(mb[PIPE_READ]);
-            if(pipe_get_num > 0){
-                ret_val = 0 ;
-            }else{
-                ret_val = 1 ; 
-            }
-        }else{
-            char str[] = "Fail";
-            close(mb[PIPE_READ]);
-            ret_val = execv(cmd_list[0],cmd_list,0);
-            write(mb[PIPE_WRITE],str,3);
-            close(mb[PIPE_WRITE]);
-            if(ret_val == -1 ) {
-                perror("run error:");
-                exit(1);
-            }else{
-                return 1;
-            }
-        }
-    }
-    */
-    if(ret_val == -1){
+     if(ret_val == -1){
         perror("execution error:");
         ret_val = 0 ;
     }
@@ -245,7 +203,7 @@ int execute(char ***cmd_list_ptr,int start_idx){
             close(mb[PIPE_WRITE]);
             if(ret_val == -1 ) {
                 perror("run error:");
-                exit(1);
+                return -1;
             }else{
                 return 1;
             }
