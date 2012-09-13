@@ -36,7 +36,7 @@ struct assoc_ar alias_s;
 #include "signal.c"
 #include "parser.c"
 
-char ** get_non_empty_line(int fd);
+void get_non_empty_line(int ,char ***);
 void show_prompt();
 char * read_command();
 
@@ -138,7 +138,7 @@ int main(int argc,char *argv[]) {
     // 0 - profile file reading mode 
     // 1 - command promt mode    
     short int cmd_mode = 0 ; 
-    line_list = get_non_empty_line(prf_fd);
+    get_non_empty_line(prf_fd,&line_list);
     int line_num = 0 ;
     int send_bg = 0;
     cmd_list = (char **) malloc(18*sizeof(char *));
@@ -159,7 +159,10 @@ int main(int argc,char *argv[]) {
                 cmd_mode++ ; 
                 if(cmd_mode == 1) {
                     if(debug_en) printf("Reading alias\n");
-                    line_list = get_non_empty_line(alias_fd);
+                    for(i=0;i<256;i++)
+                        free((line_list+i));
+                    free(line_list);
+                    get_non_empty_line(alias_fd,&line_list);
                     if(debug_en) printf("Reading alias line_0 = %s\n",line_list[0]);
                     line_num = 0 ;
                 }else{
@@ -270,7 +273,7 @@ int is_empty(char *line){
     return res;
 }
 
-char ** get_non_empty_line(int fd){
+void get_non_empty_line(int fd,char *** line_list){
     int empty_line = TRUE;
     int bytes_read;
     char *buf;
@@ -297,7 +300,6 @@ char ** get_non_empty_line(int fd){
            if(buf[i] == 0xA){
                //Line ends here
                idx = 0;
-               //if(empty_line == FALSE) {
                  if(is_empty(str)==FALSE){
                     cmd_list[line_num++] = str;
                     str = (char *) malloc(256);
@@ -306,14 +308,12 @@ char ** get_non_empty_line(int fd){
                empty_line = TRUE;
            }else{
                 str[idx++] = buf[i];
-              //  if(buf[i] > 32 && buf[i] < 127 ) {
-              //      empty_line = FALSE;
-              //  }
            }
         }
         if (bytes_read < 256 ) eof = 1 ; 
   }
-  return cmd_list;    
+  free(buf);
+  *line_list =  cmd_list;    
 }
 
 char * read_command(){
