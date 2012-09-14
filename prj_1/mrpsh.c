@@ -11,6 +11,7 @@
 // Global signal declaration 
 static int debug_en;
 static char *PROMPT="MRP:>";
+char *home ;
 
 #define TRUE 1
 #define FALSE 0
@@ -30,11 +31,13 @@ static char *PROMPT="MRP:>";
 #include "assoc_ar.c"
 
 struct assoc_ar alias_s;
+int my_pid ;
 
 
 #include "exe.c"
 #include "signal.c"
 #include "parser.c"
+#include "valid.c"
 
 void get_non_empty_line(int ,char ***);
 void show_prompt();
@@ -45,18 +48,16 @@ char *alias_file;
 
 void bye(){
         char *p;
-        printf("Exit called \n");
-        p = (char *) malloc(1);
-        lseek(alias_fd,0,SEEK_SET);
-        alias_fd = open(alias_file,O_TRUNC |O_RDWR);
-//,S_IRUSR |S_IWUSR);
-        write_alias(&alias_s,alias_fd);
- //       p[0] = EOF;
- //       p[1] = 0;
- //       write(alias_fd,p,2);
-        //write(alias_fd,4,1);
-        
-        close(alias_fd);
+        int pid;
+        pid = getpgid(0);
+        if(pid == my_pid) {
+            printf("Exit called \n");
+            p = (char *) malloc(1);
+            lseek(alias_fd,0,SEEK_SET);
+            alias_fd = open(alias_file,O_TRUNC |O_RDWR);
+            write_alias(&alias_s,alias_fd);
+            close(alias_fd);
+        }
         free(p);
 }
 
@@ -83,7 +84,8 @@ int main(int argc,char *argv[]) {
     int prf_fd;
     int pid;
     int status;
-
+     my_pid = getpgid(0);
+    printf("my Process Id = %d \n",my_pid);
    // Intialize the alias hash 
     if(debug_en) printf("Initializing hash \n");
     init(&alias_s);
@@ -106,7 +108,7 @@ int main(int argc,char *argv[]) {
         strcat(profile_file,"/PROFILE");
     }
     if(debug_en) printf("Profile Path = %s \n",profile_file);
-    
+    home = strdup(profile_path); 
     prf_fd = open(profile_file,O_RDONLY);
     if(prf_fd == -1 ) {
         // Error in file opening
@@ -182,7 +184,7 @@ int main(int argc,char *argv[]) {
     	for(i=0;i<18;i++){
 	        cmd_list[i] = NULL;
     	}
-        parseCmd(line,cmd_list);
+        parseCmd(line,&cmd_list);
         // this is temporary arragement for testing 
     //    cmd_list[0] = line; 
      /*   cmd_list[0] = "if"; 
@@ -203,11 +205,17 @@ int main(int argc,char *argv[]) {
 	    if(debug_en) printf("cmd[%d] =%s \n",len,cmd_list[len]);
 	    len++;
 	}
+
+        if(validateCommand(&cmd_list,len) != VALID_COMMAND ) { 
+            printf("Invalid command \n");
+             continue;
+        }
         if(debug_en) printf("Len of command %d \n",len);
         if(strcmp(cmd_list[len-1],"&")==0) 
             send_bg = 1 ;
         if(
             (strncmp(cmd_list[0],"cd ",3)==0) ||
+            (strcmp(cmd_list[0],"cd")==0) ||
             (strncmp(cmd_list[0],"set ",4)==0) ||
             (strcmp(cmd_list[0],"alias")==0) ||
             (strcmp(cmd_list[0],"exit"))==0){
