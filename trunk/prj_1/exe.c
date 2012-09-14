@@ -102,7 +102,7 @@ int execute_single(char * cmd){
     char **cmd_list;
     int ret_val=0;
     if(debug_en) printf("executing single %s\n",cmd); 
-    cmd_list = (char **) malloc((count_spaces(cmd)+2)*sizeof(char *));
+    cmd_list = (char **) malloc((count_spaces(cmd)+3)*sizeof(char *));
     split(cmd,&cmd_list);
     if(debug_en) printf("\nInput to execv\n");
     for(ret_val=0;cmd_list[ret_val] != NULL;ret_val++) {
@@ -111,6 +111,12 @@ int execute_single(char * cmd){
     
     if(strcmp(cmd_list[0],"cd")==0) {
         if(debug_en) printf("Chaning directory\n");
+        if(cmd_list[1] == NULL){ 
+            cmd_list[1] = (char * ) malloc(256);
+            //cmd_list[1] = strdup(home);
+            strcpy(cmd_list[1],home);
+        }
+        //printf("dir to %s of len %d Home = %s\n",cmd_list[1],strlen(cmd_list[1]),home);
         ret_val = chdir(cmd_list[1]);
     }else if(strcmp(cmd_list[0],"set")==0) {
         // shell specific configurations

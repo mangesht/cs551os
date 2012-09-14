@@ -5,19 +5,19 @@
 #define PARAM_SIZE 30
 
 
-int parsecmd( char *, char **);
+int parsecmd( char *, char ***);
 void handleException(int );
 void cleanCmd(char *, int);
 char * substr(char *, int , int );
 
 
-int parseCmd(char * cmd, char ** cmd_params){
+int parseCmd(char * cmd, char *** cmd_list){
 
   int i,j=0,char_count=0, space_encountered=0;
 
   // handles cleaning the input command
   cleanCmd(cmd, strlen(cmd));
-
+  char ** cmd_params = *cmd_list;
   // hanldes alias command
   if ( strstr(cmd,"alias ") || strstr(cmd,"set ")){ 
 	 
