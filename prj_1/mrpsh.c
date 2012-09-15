@@ -51,7 +51,7 @@ void bye(){
         int pid;
         pid = getpgid(0);
         if(pid == my_pid) {
-            printf("Exit called \n");
+            if(debug_en) printf("Exit called \n");
             p = (char *) malloc(1);
             lseek(alias_fd,0,SEEK_SET);
             alias_fd = open(alias_file,O_TRUNC |O_RDWR);
@@ -168,7 +168,7 @@ int main(int argc,char *argv[]) {
                     if(debug_en) printf("Reading alias line_0 = %s\n",line_list[0]);
                     line_num = 0 ;
                 }else{
-                    write_alias(&alias_s,STD_OUTPUT);
+                    if(debug_en) write_alias(&alias_s,STD_OUTPUT);
                     close(alias_fd);
                     free(line_list);
                 }
@@ -206,10 +206,17 @@ int main(int argc,char *argv[]) {
 	    len++;
 	}
 
-        if(validateCommand(&cmd_list,len) != VALID_COMMAND ) { 
-            printf("Invalid command \n");
-             continue;
-        }
+    if(validateCommand(&cmd_list,len) != VALID_COMMAND ) { 
+        printf("Invalid command \n");
+        continue;
+    }
+	if(debug_en) printf("Validation output \n");
+	len = 0;
+        while(cmd_list[len]!=NULL){
+	    if(debug_en) printf("cmd[%d] =%s \n",len,cmd_list[len]);
+	    len++;
+	}
+
         if(debug_en) printf("Len of command %d \n",len);
         if(strcmp(cmd_list[len-1],"&")==0) 
             send_bg = 1 ;
@@ -236,10 +243,10 @@ int main(int argc,char *argv[]) {
             exit(EXIT_FAILURE);
         }else if(pid != 0) {
             // Parent process 
-	    if(exit_reg_once == 0 ) { 
-                i	 = atexit(bye);
-		exit_reg_once = 1 ;
-	    }
+	        if(exit_reg_once == 0 ) { 
+                    i	 = atexit(bye);
+	        exit_reg_once = 1 ;
+	        }
             if(send_bg == 0 ) { 
                 waitpid(-1,&status,0);
                 if(WIFEXITED(status)) {

@@ -7,16 +7,46 @@
 
 int parsecmd( char *, char ***);
 void handleException(int );
-void cleanCmd(char *, int);
+void cleanCmd(char **, int);
 char * substr(char *, int , int );
 
+void cleanCmd(char **input_str, int n){
+    size_t i;
+    char *pCmd;
+    pCmd = *input_str;
+    char *p ;
+    // = pCmd;
+    //printf("cleanCmd : Instring %s len=%d\n",pCmd,n); 
+	for(i = 0; i < n; i++)
+	    if('\t' == pCmd[i])  pCmd[i] = ' ';
 
-int parseCmd(char * cmd, char *** cmd_list){
+    /* remove trailing space */
+    for(i = n-1; i >= 0; i--)
+        if(' ' == pCmd[i])   pCmd[i] = '\0';
+        else  break;
+
+    //printf("cleanCmd End removal : Instring %s len=%d\n",pCmd,n); 
+    /* remove leading space */
+    p=pCmd;
+    for(i = 0; i < n; i++)
+        if(pCmd[i] == 0x20 ) p = pCmd + i + 1;
+        else {
+ 		    pCmd=p;
+            break;
+        }
+    *input_str = pCmd;
+	return;
+}
+
+int parseCmd(char * in_cmd, char *** cmd_list){
 
   int i,j=0,char_count=0, space_encountered=0;
-
+  char *cmd ;
   // handles cleaning the input command
-  cleanCmd(cmd, strlen(cmd));
+  cmd = (char *) malloc(256);
+  strcpy(cmd,in_cmd);
+  cleanCmd(&cmd, strlen(cmd));
+  //printf("cleanCmd : Outstring %s\n",cmd); 
   char ** cmd_params = *cmd_list;
   // hanldes alias command
   if ( strstr(cmd,"alias ") || strstr(cmd,"set ")){ 
@@ -138,25 +168,6 @@ void handleException(int code){
 
 
 
-void cleanCmd(char *pCmd, int n){
-    size_t i;
-    char *p = pCmd;
-
-	for(i = 0; i < n; i++)
-	    if('\t' == pCmd[i])  pCmd[i] = ' ';
-
-    /* remove trailing space */
-    for(i = n-1; i >= 0; i--)
-        if(' ' == pCmd[i])   pCmd[i] = '\0';
-        else  break;
-
-    /* remove leading space */
-    for(i = 0; i < n; i++)
-        if(' ' == pCmd[i]) p = pCmd + i + 1;
-        else break;
- 		pCmd=p;
-	return;
-}
 
 /* Extracts substring from the given string 								*/
 /* Input:  	 pstr - source string											*/

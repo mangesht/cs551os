@@ -13,7 +13,7 @@
 int set_alias(char * key,char *val){
         //add functionality 
         int r;
-        printf("\n");
+        if(debug_en) printf("adding alias %s %s \n",key,val);
         r = add(&alias_s,key,val);
         return r;
 }
