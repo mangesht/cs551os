@@ -88,6 +88,7 @@ char * get(struct assoc_ar *ar,char *key){
             // Match found in main table. Replace the entry
             ret_val = (char *) malloc(256);
             p = strcpy(ret_val,ar->val_tbl[hash]);
+            if(debug_en) printf("get success returning %s\n",ret_val);
             return ret_val;
         }else{
             // Search the overflow table
@@ -98,10 +99,12 @@ char * get(struct assoc_ar *ar,char *key){
             }
             if(i == (ar->max_cur_size+ar->ov_tbl_size)){
                 // Match not found, this is new entry
+                if(debug_en) printf("get failure\n");
                 return NULL;
             }else{
                 ret_val = (char *) malloc(256);
                 p = strcpy(ret_val,ar->val_tbl[i]);
+                if(debug_en) printf("get success\n");
                 return ret_val;
             }
         }
@@ -111,13 +114,13 @@ char * get(struct assoc_ar *ar,char *key){
 void write_alias(struct assoc_ar *ar,int fd){
     char *p;
     int i;
-    printf("Processing write alias\n");
+    if(debug_en) printf("Processing write alias\n");
     for(i=0;i<ar->max_cur_size;i++){
         if(ar->hit_idx[i] == -1) {
             // Empty Location
         }else{
             // alias=6+spalce 7 , null 8  newline 9  = 10 
-            printf("Processing %dth write alias\n",i);
+            if(debug_en) printf("Processing %dth write alias\n",i);
             p = (char *) malloc((10+strlen(ar->key_tbl[i])+strlen(ar->val_tbl[i])) * sizeof(char));
             strcpy(p,"alias ");
             strcat(p,ar->key_tbl[i]);
