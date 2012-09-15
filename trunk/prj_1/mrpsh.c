@@ -49,7 +49,7 @@ char *alias_file;
 void bye(){
         char *p;
         int pid;
-        pid = getpgid(0);
+        pid = getpid();
         if(pid == my_pid) {
             if(debug_en) printf("Exit called \n");
             p = (char *) malloc(1);
@@ -84,7 +84,7 @@ int main(int argc,char *argv[]) {
     int prf_fd;
     int pid;
     int status;
-     my_pid = getpgid(0);
+     my_pid = getpid();
     printf("my Process Id = %d \n",my_pid);
    // Intialize the alias hash 
     if(debug_en) printf("Initializing hash \n");
