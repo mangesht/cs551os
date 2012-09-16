@@ -20,7 +20,14 @@ int set_alias(char * key,char *val){
 
 int set_config(char * key,char *val){
         //add functionality 
-        printf("\n");
+        if(strcmp(key,"home")==0) {
+            //strcpy(home ,val );
+            home = strdup(val);
+        }else if(strcmp(key,"prompt")==0){
+            //strcpy(PROMPT,val);
+            PROMPT = strdup(val);
+        }
+        //printf("\n");
         return 0;
 }
 int count_spaces(char *str){
