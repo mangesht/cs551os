@@ -11,7 +11,7 @@
 // Global signal declaration 
 static int debug_en;
 static char *PROMPT="MRP:>";
-char *home ;
+static char *home ;
 
 #define TRUE 1
 #define FALSE 0
@@ -223,7 +223,7 @@ int main(int argc,char *argv[]) {
         if(
             (strncmp(cmd_list[0],"cd ",3)==0) ||
             (strcmp(cmd_list[0],"cd")==0) ||
-            (strncmp(cmd_list[0],"set ",4)==0) ||
+            (strcmp(cmd_list[0],"set")==0) ||
             (strcmp(cmd_list[0],"alias")==0) ||
             (strcmp(cmd_list[0],"exit"))==0){
             if(debug_en) printf("cd matched");
@@ -232,7 +232,11 @@ int main(int argc,char *argv[]) {
             if(strcmp(cmd_list[0],"alias")==0) {
                 ret_val = set_alias(cmd_list[1],cmd_list[2]);
                 continue;
+            }else if(strcmp(cmd_list[0],"set")==0) {
+                ret_val = set_config(cmd_list[1],cmd_list[2]);
+                continue;
             }
+
         }
         if(no_fork == 1 ) {
             ret_val = execute(&cmd_list,0);
