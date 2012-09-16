@@ -101,7 +101,7 @@ void split(char *str,char *** str_list_ptr){
 int execute_single(char * cmd){
     char **cmd_list;
     int ret_val=0;
-    if(debug_en) printf("executing single %s\n",cmd); 
+    if(debug_en) printf("executing single ->%s<-\n",cmd); 
     cmd_list = (char **) malloc((count_spaces(cmd)+3)*sizeof(char *));
     split(cmd,&cmd_list);
     if(debug_en) printf("\nInput to execv\n");
@@ -138,6 +138,7 @@ int execute(char ***cmd_list_ptr,int start_idx){
     int i;
     int next_cmd_locn = start_idx;
     int len;
+    int pipe_fd[2];
     cmd_list = *cmd_list_ptr;
     len = 0 ;
     if(debug_en) printf("executing %s\n",cmd_list[start_idx]); 
@@ -154,7 +155,7 @@ int execute(char ***cmd_list_ptr,int start_idx){
             // Redirection operator
             //out_fd = open(cmd_list[start_idx+2],O_CREAT,0x777);
             //out_fd = open("outfile.txt",O_CREAT|O_WRONLY,S_IRUSR |S_IWUSR);
-            out_fd = open(cmd_list[start_idx+2],O_CREAT|O_WRONLY,S_IRUSR |S_IWUSR);
+            out_fd = open(cmd_list[start_idx+2],O_CREAT | O_TRUNC | O_RDWR);
             if(out_fd == -1 ) {
                 if(debug_en) printf("Error Opening file :%s:",cmd_list[start_idx+2]);
 
@@ -168,8 +169,34 @@ int execute(char ***cmd_list_ptr,int start_idx){
             ret_val=execute_single(cmd_list[start_idx]);
         }else if(strcmp(cmd_list[start_idx+1],"|")==0){
             // pipe operator
+            int pid;
+            if((pipe(&pipe_fd[0])) == -1 ) {
+                perror("pipe_error:");
+                return 0;
+            }
+            pid = fork();
+            if(debug_en) printf("pid = %d \n",pid);
+            //printf("Pipeing \n");
+            if(pid == -1 ) {
+                perror("forking_error:");
+                return 0;
+             }else if(pid != 0) {
+                // Parent process 
+                close(pipe_fd[PIPE_READ]);
+                close(STD_OUTPUT);
+                dup(pipe_fd[PIPE_WRITE]);
+                close(pipe_fd[PIPE_WRITE]);
+                ret_val = execute_single(cmd_list[start_idx]);
+             }else{
+                 // Child process
+                 close(pipe_fd[PIPE_WRITE]);
+                 close(STD_INPUT);
+                 dup(pipe_fd[PIPE_READ]);
+                 close(pipe_fd[PIPE_READ]);
+                 ret_val = execute_single(cmd_list[start_idx+2]);
+             }
         }
-        ret_val = execute_single(cmd_list[start_idx+2]);
+        //ret_val = execute_single(cmd_list[start_idx+2]);
     }else if(strcmp(cmd_list[start_idx],"if")==0) {
         // Process it as if then else fi
         if(debug_en) printf("Processing if\n");
@@ -183,7 +210,7 @@ int execute(char ***cmd_list_ptr,int start_idx){
         }
         pipe_get_num = 0 ; 
         pid = fork();
-        printf("pid = %d \n",pid);
+        if(debug_en) printf("pid = %d \n",pid);
         if(pid == -1 ) {
             perror("forking_error:");
             return 0;

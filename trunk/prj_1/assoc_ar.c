@@ -128,7 +128,7 @@ void write_alias(struct assoc_ar *ar,int fd){
             strcat(p,ar->val_tbl[i]);
             strcat(p,"\n");
             write(fd,p,strlen(p));
-            printf("%s",p);
+            if(debug_en) printf("%s",p);
         }
     }
 //    close(fd);

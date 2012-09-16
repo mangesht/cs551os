@@ -155,6 +155,10 @@ int parseCmd(char * in_cmd, char *** cmd_list){
 	  }
 	  }
    }
+   for(i=0;cmd_params[i] != NULL ; i++) {
+        //printf("Calling clearn on %d \n",i);
+        cleanCmd(&cmd_params[i],strlen(cmd_params[i]));
+   }
 return 1 ;
 }
 
