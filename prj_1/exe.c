@@ -162,7 +162,7 @@ int execute(char ***cmd_list_ptr,int start_idx){
             // Redirection operator
             //out_fd = open(cmd_list[start_idx+2],O_CREAT,0x777);
             //out_fd = open("outfile.txt",O_CREAT|O_WRONLY,S_IRUSR |S_IWUSR);
-            out_fd = open(cmd_list[start_idx+2],O_CREAT | O_TRUNC | O_RDWR);
+            out_fd = open(cmd_list[start_idx+2],O_CREAT | O_TRUNC | O_RDWR,S_IRUSR |S_IWUSR);
             if(out_fd == -1 ) {
                 if(debug_en) printf("Error Opening file :%s:",cmd_list[start_idx+2]);
 
@@ -187,20 +187,22 @@ int execute(char ***cmd_list_ptr,int start_idx){
             if(pid == -1 ) {
                 perror("forking_error:");
                 return 0;
-             }else if(pid != 0) {
-                // Parent process 
+             }else if(pid == 0) {
+                // Child process 
                 close(pipe_fd[PIPE_READ]);
                 close(STD_OUTPUT);
                 dup(pipe_fd[PIPE_WRITE]);
                 close(pipe_fd[PIPE_WRITE]);
                 ret_val = execute_single(cmd_list[start_idx]);
+                //execute(&cmd_list,start_idx );
              }else{
-                 // Child process
+                 // Parent process
                  close(pipe_fd[PIPE_WRITE]);
                  close(STD_INPUT);
                  dup(pipe_fd[PIPE_READ]);
                  close(pipe_fd[PIPE_READ]);
-                 ret_val = execute_single(cmd_list[start_idx+2]);
+                 //ret_val = execute_single(cmd_list[start_idx+2]);
+                execute(&cmd_list,start_idx + 2 );
              }
         }
         //ret_val = execute_single(cmd_list[start_idx+2]);
