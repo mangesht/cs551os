@@ -119,8 +119,9 @@ int validateCommand(char ***cmd_list, int numArguments)
 		return NULL_COMMAND;
 	}
     if(debug_en) printf("Validation input=%s=\n",listOfCommands[0]);	
-
-		tempCmd = strdup(listOfCommands[0]);
+	for ( i = 0; i < numArguments; i++){
+    
+		tempCmd = strdup(listOfCommands[i]);
 		cmd = strtok(tempCmd, " ");
 		// Entered command does not have any options at all.
 		if(NULL == cmd) {
@@ -133,7 +134,7 @@ int validateCommand(char ***cmd_list, int numArguments)
         if(alias_val != NULL) {
              int cmd_len ;
              char *str;
-             tempCmd = strdup(listOfCommands[0]);
+             tempCmd = strdup(listOfCommands[i]);
              int len = strlen(usrBinPath) + strlen(tempCmd) + 2; 
              str = (char *) malloc(len);
              strcpy(str,alias_val);
@@ -149,11 +150,11 @@ int validateCommand(char ***cmd_list, int numArguments)
                *(str+cmd_len+j) = 0x0;
               // printf("str of space = %d\n",cmd_len+i);
                if(debug_en) printf("\n list of command = %s \n",str);
-               listOfCommands[0] = str;
+               listOfCommands[i] = str;
         } else {
             if(debug_en) printf("Search alias failed \n");
         }
-	for ( i = 0; i < numArguments; i++){
+
 		//Gets the command ignoring options
 		tempCmd = strdup(listOfCommands[i]);
 		cmd = strtok(tempCmd, " ");
@@ -191,7 +192,7 @@ int validateCommand(char ***cmd_list, int numArguments)
                     if( (access(binPath, F_OK) >= 0) || (access(usrBinPath, F_OK) >= 0)){
                          int cmd_len ;
                          char *str;
-                         tempCmd = strdup(listOfCommands[0]);
+                         tempCmd = strdup(listOfCommands[i]);
                          int len = strlen(usrBinPath) + strlen(tempCmd) + 2; 
                          str = (char *) malloc(len);
                          if(access(binPath, F_OK) >= 0) {
@@ -211,7 +212,7 @@ int validateCommand(char ***cmd_list, int numArguments)
                          *(str+cmd_len+j) = 0x0;
                         // printf("str of space = %d\n",cmd_len+i);
                         // printf("\n list of command = %s \n",str);
-                         listOfCommands[0] = str;
+                         listOfCommands[i] = str;
                     }
 					
 			} else {

@@ -202,7 +202,7 @@ int main(int argc,char *argv[]) {
 	if(debug_en) printf("Parser output \n");
 	len = 0;
         while(cmd_list[len]!=NULL){
-	    if(debug_en) printf("cmd[%d] =%s \n",len,cmd_list[len]);
+	    if(debug_en) printf("cmd[%d] ->%s<-\n",len,cmd_list[len]);
 	    len++;
 	}
 
