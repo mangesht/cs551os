@@ -14,7 +14,7 @@
 #define PARAM_SIZE 30
 
 
-int parsecmd( char *, char **);
+int parsecmd( char *, char ***);
 void isMemAllocated(char *mem );
 void cleanCmd(char **, int);
 char * substr(char *, int , int );
@@ -24,7 +24,7 @@ void addCmdParam(char**,char*, char*,char*,int *);
  * Returns parsed command in an array 
 */
 
-int parseCmd(char * in_cmd, char ** cmd_list){
+int parseCmd(char * in_cmd, char *** cmd_list){
 
   int i,j=0,char_count=0, space_encountered=0;
 
@@ -32,7 +32,7 @@ int parseCmd(char * in_cmd, char ** cmd_list){
   char * cmd = (char *) malloc(256);
   strcpy(cmd,in_cmd);
   cleanCmd(&cmd, strlen(cmd));
-
+  char **cmd_params = *cmd_list;
   // hanldes alias command
   if ( strstr(cmd,"alias ") || strstr(cmd,"set ")){ 
 	 
@@ -44,7 +44,7 @@ int parseCmd(char * in_cmd, char ** cmd_list){
 	if (ptr != NULL && ptr==cmd ){
 	   char * pch = (char*)strtok (ptr," =");
 	   while (pch != NULL){	  
-		  cmd_list[j++]= pch;
+		  cmd_params[j++]= pch;
 		  pch = strtok (NULL, "=");
 
 		  if (pch!=NULL){
@@ -57,7 +57,7 @@ int parseCmd(char * in_cmd, char ** cmd_list){
 				}
 		   }
 		}
-	 cmd_list[j]=NULL;
+	 cmd_params[j]=NULL;
 	 return 1;	
 	 }
   }
@@ -71,8 +71,8 @@ int parseCmd(char * in_cmd, char ** cmd_list){
   for (i=0;i<strlen(cmd)+1;i++){
    	  if(pLoc!=NULL){
 	     if( pLoc-param>0)
-         cmd_list[j++]=  substr(param,0, pLoc-param);
-   	     cmd_list[j++]= temp;
+         cmd_params[j++]=  substr(param,0, pLoc-param);
+   	     cmd_params[j++]= temp;
 	     mem =  (char*)malloc(sizeof(char)* PARAM_SIZE);
 	     param=mem;
 	     pLoc=NULL;
@@ -81,13 +81,13 @@ int parseCmd(char * in_cmd, char ** cmd_list){
 
    if ( (cmd[i]=='&' || cmd[i]=='>' || cmd[i]=='|' || cmd[i]=='\0' )&& char_count != 0 ){
    	   *mem='\0';
-	   cmd_list[j++]= param;
+	   cmd_params[j++]= param;
 	   if (cmd[i] != '\0'){
 	       mem =  (char*)malloc(sizeof(char)* 2);
 	       param=mem;
 	       *mem++ = cmd[i];
 	       *mem = '\0';
-	       cmd_list[j++]= param;
+	       cmd_params[j++]= param;
 
 	       mem =  (char*)malloc(sizeof(char)* PARAM_SIZE);
 	       param=mem;
@@ -136,9 +136,9 @@ int parseCmd(char * in_cmd, char ** cmd_list){
 	  }		
 	  }
    }
-   for(i=0;cmd_list[i] != NULL ; i++) {
+   for(i=0;cmd_params[i] != NULL ; i++) {
         //printf("Calling clearn on %d \n",i);
-        cleanCmd(&cmd_list[i],strlen(cmd_list[i]));
+        cleanCmd(&cmd_params[i],strlen(cmd_params[i]));
    }
 return 1 ;
 }
