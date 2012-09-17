@@ -41,6 +41,7 @@ int add(struct assoc_ar *ar,char *key,char *val){
     char *p;
     int i;
     hash = get_hash(key);
+    if(debug_en) printf("hash = %d \n",hash); 
     if(ar->hit_idx[hash] == -1 ) {
         // The entry is empty. Creat New entry
         p = strcpy(ar->key_tbl[hash],key);
