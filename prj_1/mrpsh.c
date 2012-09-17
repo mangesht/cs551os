@@ -39,9 +39,9 @@ int my_pid ;
 #include "parser.c"
 #include "valid.c"
 
-void get_non_empty_line(int ,char ***);
+int get_non_empty_line(int ,char ***);
 void show_prompt();
-char * read_command();
+int read_command(char **);
 
 int alias_fd;
 char *alias_file;
@@ -58,7 +58,7 @@ void bye(){
             write_alias(&alias_s,alias_fd);
             close(alias_fd);
         }
-        free(p);
+//        free(p);
 }
 
 int main(int argc,char *argv[]) {
@@ -140,7 +140,8 @@ int main(int argc,char *argv[]) {
     // 0 - profile file reading mode 
     // 1 - command promt mode    
     short int cmd_mode = 0 ; 
-    get_non_empty_line(prf_fd,&line_list);
+    int line_full;
+    line_full=  get_non_empty_line(prf_fd,&line_list);
     int line_num = 0 ;
     int send_bg = 0;
     cmd_list = (char **) malloc(18*sizeof(char *));
@@ -149,22 +150,23 @@ int main(int argc,char *argv[]) {
         send_bg = 0 ; 
         if(cmd_mode == 2 ){
             show_prompt();
-            line = read_command();
+            read_command(&line);
             if(is_empty(line)){
-                free(line);
+                //free(line);
                 continue;
             }
         }else{
-            if(line_list[line_num] == NULL) {
+            if(line_list[line_num] == NULL || line_full == 0) {
                 // EOF Reached 
                 if(debug_en) printf("Eof reached in PROFILE");
                 cmd_mode++ ; 
                 if(cmd_mode == 1) {
+                    close(prf_fd);
                     if(debug_en) printf("Reading alias\n");
                    // for(i=0;i<256;i++)
                         //free((line_list+i));
                     //free(line_list);
-                    get_non_empty_line(alias_fd,&line_list);
+                    line_full = get_non_empty_line(alias_fd,&line_list);
                     if(debug_en) printf("Reading alias line_0 = %s\n",line_list[0]);
                     line_num = 0 ;
                 }else{
@@ -275,9 +277,9 @@ int main(int argc,char *argv[]) {
         free(line);
         //free(line_list);
 	for(i=0;i<len;i++){
-	    free(cmd_list[i]);
+	    //free(cmd_list[i]);
 	}
-//	free(cmd_list);
+//	//free(cmd_list);
     } 
     return 0;
 }
@@ -296,7 +298,7 @@ int is_empty(char *line){
     return res;
 }
 
-void get_non_empty_line(int fd,char *** line_list){
+int get_non_empty_line(int fd,char *** line_list){
     int empty_line = TRUE;
     int bytes_read;
     char *buf;
@@ -306,6 +308,7 @@ void get_non_empty_line(int fd,char *** line_list){
     char **cmd_list;
     int line_num = 0;
     int idx=0;
+    int success = 0 ;
     cmd_list = (char **) malloc(256);
     if(cmd_list == NULL) {
         printf("Memory allocation failed\n");
@@ -332,14 +335,16 @@ void get_non_empty_line(int fd,char *** line_list){
            }else{
                 str[idx++] = buf[i];
            }
+	   success = 1 ;
         }
         if (bytes_read < 256 ) eof = 1 ; 
   }
   //free(buf);
   *line_list =  cmd_list;    
+  return success;
 }
 
-char * read_command(){
+int  read_command(char **in_cmd){
     char ch; 
     int len = 0;
     int ret_val;
@@ -357,7 +362,8 @@ char * read_command(){
     *(cmd+len-1) = 0;
     //printf("scanDone %s",cmd);
     //printf("cmd = %x str = %x \n",cmd,str);
-    return cmd;
+    *in_cmd = cmd;
+    return 1;
 }
 
 void show_prompt(){
