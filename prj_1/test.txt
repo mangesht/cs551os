@@ -1,5 +1,7 @@
 echo "Doing simple test if-then-else-fi" 
 if ls then echo "ls_works" else "ls_not_work" fi
 echo " Doing nested if test"
-if pwd then if lis then echo "pwd yes lis no" else echo "pwd yes lis yes" fi else echo "pwd No" fi
+if pwd then if lis then echo "pwd yes lis yes" else echo "pwd yes lis no" fi else echo "pwd No" fi
+echo "One more command "
+if if ls then ls else liso_erocmd fi then echo "internal ls works" else "Internal is bad " fi 
 
