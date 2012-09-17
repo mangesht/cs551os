@@ -82,6 +82,11 @@ void split(char *str,char *** str_list_ptr){
             // This indicates quote "
             //printf(" m1 "); 
             skip = skip == 1 ? 0 : 1 ; 
+	    if(i==len-1){
+                tstr[idx++] = '\0';
+                str_list[line_num]= tstr;
+                line_num++;
+	    }
         }else if((skip == 0 && str[i] == 0x20)){
             tstr[idx++] = '\0';
             str_list[line_num]= tstr;

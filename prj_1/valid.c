@@ -184,11 +184,14 @@ int validateCommand(char ***cmd_list, int numArguments)
 				
 			        if (debug_en ) printf ( " Command %s exist\n ", cmd);	
 					found = 1;
-                    if((strcmp(cmd,"alias")==0) || (strcmp(cmd,"set")==0)){
+                    if((strcmp(cmd,"alias")==0) || (strcmp(cmd,"set")==0)) {
                             if((listOfCommands[i+1] != NULL ) && (listOfCommands[i+2] != NULL)) {
 		                        return VALID_COMMAND;
                             }
-                    }
+                    }else if(strcmp(cmd,"cd")==0 || strncmp(cmd,"cd ",3)==0){
+		                        return VALID_COMMAND;
+					}
+
                     if( (access(binPath, F_OK) >= 0) || (access(usrBinPath, F_OK) >= 0)){
                          int cmd_len ;
                          char *str;
