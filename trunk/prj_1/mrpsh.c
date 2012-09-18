@@ -39,7 +39,7 @@ int my_pid ;
 #include "parser.c"
 #include "valid.c"
 
-int get_non_empty_line(int ,char ***);
+int get_non_empty_line(int ,char **);
 void show_prompt();
 int read_command(char **);
 
@@ -141,7 +141,10 @@ int main(int argc,char *argv[]) {
     // 1 - command promt mode    
     short int cmd_mode = 0 ; 
     int line_full;
-    line_full=  get_non_empty_line(prf_fd,&line_list);
+    char *line;
+    line = (char *) malloc(256*sizeof(char));
+//  line_full=  get_non_empty_line(prf_fd,&line);
+    line_full = 1;
     int line_num = 0 ;
     int send_bg = 0;
     cmd_list = (char **) malloc(18*sizeof(char *));
@@ -156,29 +159,33 @@ int main(int argc,char *argv[]) {
                 continue;
             }
         }else{
-            if(line_list[line_num] == NULL || line_full == 0) {
+            if(line == NULL || line_full == 0) {
                 // EOF Reached 
                 if(debug_en) printf("Eof reached in PROFILE");
                 cmd_mode++ ; 
                 if(cmd_mode == 1) {
                     close(prf_fd);
                     if(debug_en) printf("Reading alias\n");
-                   // for(i=0;i<256;i++)
-                        //free((line_list+i));
-                    //free(line_list);
-                    line_full = get_non_empty_line(alias_fd,&line_list);
-                    if(debug_en) printf("Reading alias line_0 = %s\n",line_list[0]);
+                    line_full = get_non_empty_line(alias_fd,&line);
+                    if(debug_en) printf("Reading alias line_0 = %s\n",line);
                     line_num = 0 ;
                 }else{
                     if(debug_en) write_alias(&alias_s,STD_OUTPUT);
                     close(alias_fd);
-                    free(line_list);
+                    //free(line_list);
                 }
                 continue;
             }else{
-                line = line_list[line_num];
+                //line = line_list[line_num];
+                if(cmd_mode == 0 ) { 
+                     line_full = get_non_empty_line(prf_fd,&line);
+                } else {
+                     line_full = get_non_empty_line(alias_fd,&line);
+                }
+ 
                 line_num++;
             }
+            if(line_full == 0) continue ;
         }
         if(debug_en) printf("Parse : %s\n",line);
 
@@ -274,7 +281,7 @@ int main(int argc,char *argv[]) {
             }
         }
         }
-        free(line);
+        //free(line);
         //free(line_list);
 	for(i=0;i<len;i++){
 	    //free(cmd_list[i]);
@@ -297,8 +304,32 @@ int is_empty(char *line){
     }
     return res;
 }
-
-int get_non_empty_line(int fd,char *** line_list){
+ 
+int get_non_empty_line(int fd,char **line) {
+int idx;
+int bytes_read;
+char *buf;
+char *str; 
+str = *line;
+isMemAllocated(buf = (char *) malloc(4));
+idx = 0;
+while((bytes_read = read(fd,buf,1))>0){
+    if (debug_en) printf("Read from file  %c  %d \n",buf[0],buf[0]);
+    if(buf[0] == 0xA) {
+        *(str+idx) = 0;
+        break;
+    }else{
+        *(str+idx) = buf[0];
+        idx++;
+        *(str+idx) =0;
+    }
+}
+if (debug_en) printf("output = %s \n",*line);
+//*line = str;
+return idx;
+}
+ 
+int _get_non_empty_line(int fd,char *** line_list){
     int empty_line = TRUE;
     int bytes_read;
     char *buf;
