@@ -173,6 +173,7 @@ int main(int argc,char *argv[]) {
                     if(debug_en) write_alias(&alias_s,STD_OUTPUT);
                     close(alias_fd);
                     //free(line_list);
+		    chdir(home);
                 }
                 continue;
             }else{
