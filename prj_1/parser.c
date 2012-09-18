@@ -81,9 +81,9 @@ int parseCmd(char * in_cmd, char *** cmd_list){
 	    }
         if(cmd[i] == 0x22) { 
               q_st = q_st == 1 ?  0 : 1 ;
+              char_count++;
+              *mem++ = cmd[i];
               if(q_st == 0) {
-                    char_count++;
-                    //*mem++ = cmd[i];
                     *mem='\0';
                     space_encountered = 0 ;
               }
