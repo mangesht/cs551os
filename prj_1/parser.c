@@ -66,7 +66,9 @@ int parseCmd(char * in_cmd, char *** cmd_list){
   char *mem, *pLoc = NULL, * temp= NULL;
   isMemAllocated( mem =  (char*)malloc(sizeof(char)* 100));
   char * param = mem;
-
+  int q_st  ; 
+  q_st = 0;
+ 
 
   for (i=0;i<strlen(cmd)+1;i++){
    	  if(pLoc!=NULL){
@@ -77,9 +79,25 @@ int parseCmd(char * in_cmd, char *** cmd_list){
 	     param=mem;
 	     pLoc=NULL;
 	    }
+        if(cmd[i] == 0x22) { 
+              q_st = q_st == 1 ?  0 : 1 ;
+              if(q_st == 0) {
+                    char_count++;
+                    //*mem++ = cmd[i];
+                    *mem='\0';
+                    space_encountered = 0 ;
+              }
+              continue;
+       }
+      if(q_st == 1 ){
+         char_count++;
+         *mem++ = cmd[i];
+         *mem='\0';
+         continue;
+     }
+ 
 
-
-   if ( (cmd[i]=='&' || cmd[i]=='>' || cmd[i]=='|' || cmd[i]=='\0' )&& char_count != 0 ){
+   if ( (cmd[i]=='&' || cmd[i]=='>' || cmd[i]=='|' || cmd[i]=='\0' )&& (char_count != 0) && (q_st == 0) ){
    	   *mem='\0';
 	   cmd_params[j++]= param;
 	   if (cmd[i] != '\0'){
@@ -165,13 +183,13 @@ void cleanCmd(char **input_str, int n){
 
     /* remove trailing space */
     for(i = n-1; i >= 0; i--)
-        if(' ' == pCmd[i])   pCmd[i] = '\0';
+        if(pCmd[i] <= 0x20)   pCmd[i] = '\0';
         else  break;
 
     /* remove leading space */
     p=pCmd;
     for(i = 0; i < n; i++)
-        if(pCmd[i] == 0x20 ) p = pCmd + i + 1;
+        if(pCmd[i] <= 0x20 ) p = pCmd + i + 1;
         else {
  		    pCmd=p;
             break;

@@ -154,7 +154,7 @@ int execute(char ***cmd_list_ptr,int start_idx){
     cmd_list = *cmd_list_ptr;
     len = 0 ;
     if(debug_en) printf("executing %s\n",cmd_list[start_idx]); 
-    while(cmd_list[len] != NULL) { 
+    while(cmd_list[start_idx+len] != NULL) { 
         len++;
     }
     //printf("Len = %d \n",len); 
@@ -222,6 +222,31 @@ int execute(char ***cmd_list_ptr,int start_idx){
             perror("pipeing_error:");
             return 0;
         }
+        int else_locn = -1;
+        int then_locn = -1;
+        int fi_locn = -1;
+        int if_cnt = 0 ; 
+        i = start_idx + 1 ;
+        while(cmd_list[i] != NULL){
+            if(strcmp(cmd_list[i],"else")==0 && if_cnt == 0 ) { 
+                // else found 
+                else_locn = i ; 
+            }else if(strcmp(cmd_list[i],"fi")==0){
+                // End encountered
+                if(if_cnt == 0) { 
+                    fi_locn = i;
+                    break;
+                } else { 
+                    if_cnt--;
+                }
+            } else if(strcmp(cmd_list[i],"then")==0 && if_cnt == 0 ) { 
+                then_locn = i;
+            }else if(strcmp(cmd_list[i],"if")==0){
+  if_cnt++;
+            }
+            i++;
+        }
+ 
         pipe_get_num = 0 ; 
         pid = fork();
         if(debug_en) printf("pid = %d \n",pid);
@@ -255,40 +280,15 @@ int execute(char ***cmd_list_ptr,int start_idx){
                 return 1;
             }
         }
-
         //ret_val = execute(&cmd_list,start_idx+1);
-        // search for else
-        int else_locn = -1;
-        int fi_locn = -1;
-        i = start_idx + 1 ;
-        while(cmd_list[i] != NULL){
-            if(strcmp(cmd_list[i],"else")==0) { 
-                // else found 
-                else_locn = i ; 
-            }else if(strcmp(cmd_list[i],"fi")==0){
-                // End encountered
-                fi_locn = i;
-                break;
-            }
-            i++;
-        }
-        if(debug_en) printf("if ret_val= %d , else_locn = %d fi_locn = %d ",ret_val,else_locn,fi_locn);
+       if(debug_en) printf("if ret_val= %d , else_locn = %d fi_locn = %d ",ret_val,else_locn,fi_locn);
         if(ret_val == TRUE ){
             // Find then part , it must be at cmd_list[start_idx+2]
-            ret_val = execute(&cmd_list,start_idx+3);
+            ret_val = execute(&cmd_list,then_locn+1);
         }else{
             // execute the false part of if ()
             ret_val = execute(&cmd_list,else_locn+1);
         } 
-        // Remove this if then else from the cmd_list 
-        for(i=fi_locn+1;cmd_list[i] != NULL;i++){
-            cmd_list[next_cmd_locn++] = cmd_list[i];
-        }
-        cmd_list[next_cmd_locn++] = NULL;
-        if(debug_en) printf("After removing \n");
-        for(i=start_idx;cmd_list[i] != NULL;i++){
-             if(debug_en)printf("%s\n",cmd_list[i]);
-        }
     }else if(strcmp(cmd_list[start_idx],"cd")==0) {
         // Change directory
     }else{

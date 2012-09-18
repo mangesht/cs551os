@@ -1,0 +1,42 @@
+clear
+sleep 1
+echo "Simple instruction ls " 
+sleep 2
+ls
+sleep 2
+clear
+echo "Command with arguments ls -al "
+sleep 2
+ls -al 
+sleep 2
+clear
+echo "The redirection operation ls -al > b.txt"
+sleep 1
+ls -al > b.txt
+sleep 2
+echo "See the output cat b.txt"
+sleep 2
+cat b.txt
+sleep 2
+clear
+echo "Simple pipe ls | grep a "
+sleep 1
+ls | grep a 
+sleep 2
+clear
+echo "Redirection plus pipe ls | grep a > b.txt"
+sleep 1
+ls | grep a > b.txt
+sleep 1
+echo "See the  cat b.txt" 
+sleep 1
+cat b.txt
+clear 
+echo "Set Aliasing list=ls"
+alias list=ls
+echo "Use Command list"
+list
+sleep 2
+clear "Change Prompt"
+set prompt="IIT:>"
+echo "Prompt is changed ?"
