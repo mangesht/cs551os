@@ -136,7 +136,7 @@ void write_alias(struct assoc_ar *ar,int fd){
 }
 
 void print_array(struct assoc_ar* ar){
-    int i,j=0;
+    int i=0;
     for(i=0;i<8;i++){
         printf("value = %s\n",ar->key_tbl[i]);
     }

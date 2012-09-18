@@ -148,7 +148,6 @@ int execute(char ***cmd_list_ptr,int start_idx){
     char **cmd_list;
     int ret_val;
     int i;
-    int next_cmd_locn = start_idx;
     int len;
     int pipe_fd[2];
     cmd_list = *cmd_list_ptr;
@@ -299,6 +298,7 @@ int execute(char ***cmd_list_ptr,int start_idx){
         if(debug_en) printf("Len smaller \n");
         ret_val = execute_single(cmd_list[start_idx]);
     }
+    return ret_val;
 }
 
 
