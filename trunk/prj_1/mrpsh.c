@@ -47,18 +47,18 @@ int alias_fd;
 char *alias_file;
 
 void bye(){
-        char *p;
-        int pid;
-        pid = getpid();
-        if(pid == my_pid) {
-            if(debug_en) printf("Exit called \n");
-            p = (char *) malloc(1);
-            lseek(alias_fd,0,SEEK_SET);
-            alias_fd = open(alias_file,O_TRUNC |O_RDWR);
-            write_alias(&alias_s,alias_fd);
-            close(alias_fd);
-        }
-//        free(p);
+    char *p;
+    int pid;
+    pid = getpid();
+    if(pid == my_pid) {
+        if(debug_en) printf("Exit called \n");
+        p = (char *) malloc(1);
+        lseek(alias_fd,0,SEEK_SET);
+        alias_fd = open(alias_file,O_TRUNC |O_RDWR);
+        write_alias(&alias_s,alias_fd);
+        close(alias_fd);
+    }
+    //        free(p);
 }
 
 int main(int argc,char *argv[]) {
@@ -68,7 +68,7 @@ int main(int argc,char *argv[]) {
     int ret_val=-1;
     int len=0; 
     int exit_reg_once = 0 ; 
-
+    
     // Register interrupt handler 
     register_signal();
     // Get all the command line parameters 
@@ -84,13 +84,13 @@ int main(int argc,char *argv[]) {
     int prf_fd;
     int pid;
     int status;
-     my_pid = getpid();
+    my_pid = getpid();
     printf("my Process Id = %d \n",my_pid);
-   // Intialize the alias hash 
+    // Intialize the alias hash 
     if(debug_en) printf("Initializing hash \n");
     init(&alias_s);
     if(debug_en) printf("Done Initializing hash \n");
- 
+    
     profile_file = (char *) malloc(256);
     profile_path = (char *) malloc(256);
     alias_file = (char *) malloc(256);
@@ -143,7 +143,7 @@ int main(int argc,char *argv[]) {
     int line_full;
     char *line;
     line = (char *) malloc(256*sizeof(char));
-//  line_full=  get_non_empty_line(prf_fd,&line);
+    //  line_full=  get_non_empty_line(prf_fd,&line);
     line_full = 1;
     int line_num = 0 ;
     int send_bg = 0;
@@ -173,31 +173,31 @@ int main(int argc,char *argv[]) {
                     if(debug_en) write_alias(&alias_s,STD_OUTPUT);
                     close(alias_fd);
                     //free(line_list);
-		    chdir(home);
+                    chdir(home);
                 }
                 continue;
             }else{
                 //line = line_list[line_num];
                 if(cmd_mode == 0 ) { 
-                     line_full = get_non_empty_line(prf_fd,&line);
+                    line_full = get_non_empty_line(prf_fd,&line);
                 } else {
-                     line_full = get_non_empty_line(alias_fd,&line);
+                    line_full = get_non_empty_line(alias_fd,&line);
                 }
- 
+                
                 line_num++;
             }
             if(line_full == 0) continue ;
         }
         if(debug_en) printf("Parse : %s\n",line);
-
+        
         // parser should give back cmd_list
-    	for(i=0;i<18;i++){
-	        cmd_list[i] = NULL;
-    	}
+        for(i=0;i<18;i++){
+            cmd_list[i] = NULL;
+        }
         parseCmd(line,&cmd_list);
         // this is temporary arragement for testing 
-    //    cmd_list[0] = line; 
-     /*   cmd_list[0] = "if"; 
+        //    cmd_list[0] = line; 
+        /*   cmd_list[0] = "if"; 
         cmd_list[1] = line; 
         cmd_list[2] = "then"; 
         cmd_list[3] = "/bin/ls"; 
@@ -205,40 +205,40 @@ int main(int argc,char *argv[]) {
         cmd_list[5] = "/bin/ls -al"; 
         cmd_list[6] = "fi"; 
         cmd_list[7] = "/bin/ls"; 
-       // cmd_list[8] = "&"; 
+        // cmd_list[8] = "&"; 
         //cmd_list[2] = "outfile.txt";
         */  
         int no_fork = 0;
-	if(debug_en) printf("Parser output \n");
-	len = 0;
+        if(debug_en) printf("Parser output \n");
+        len = 0;
         while(cmd_list[len]!=NULL){
-	    if(debug_en) printf("cmd[%d] ->%s<-\n",len,cmd_list[len]);
-	    len++;
-	}
-
-    if(validateCommand(&cmd_list,len) != VALID_COMMAND ) { 
-        printf("Invalid command \n");
-        continue;
-    }
-	if(debug_en) printf("Validation output \n");
-	len = 0;
+            if(debug_en) printf("cmd[%d] ->%s<-\n",len,cmd_list[len]);
+            len++;
+        }
+        
+        if(validateCommand(&cmd_list,len) != VALID_COMMAND ) { 
+            printf("Invalid command \n");
+            continue;
+        }
+        if(debug_en) printf("Validation output \n");
+        len = 0;
         while(cmd_list[len]!=NULL){
-	    if(debug_en) printf("cmd[%d] =%s \n",len,cmd_list[len]);
-	    len++;
-	}
-
+            if(debug_en) printf("cmd[%d] =%s \n",len,cmd_list[len]);
+            len++;
+        }
+        
         if(debug_en) printf("Len of command %d \n",len);
         if(strcmp(cmd_list[len-1],"&")==0) 
-            send_bg = 1 ;
+        send_bg = 1 ;
         if(
-            (strncmp(cmd_list[0],"cd ",3)==0) ||
-            (strcmp(cmd_list[0],"cd")==0) ||
-            (strcmp(cmd_list[0],"set")==0) ||
-            (strcmp(cmd_list[0],"alias")==0) ||
-            (strcmp(cmd_list[0],"exit"))==0){
+        (strncmp(cmd_list[0],"cd ",3)==0) ||
+        (strcmp(cmd_list[0],"cd")==0) ||
+        (strcmp(cmd_list[0],"set")==0) ||
+        (strcmp(cmd_list[0],"alias")==0) ||
+        (strcmp(cmd_list[0],"exit"))==0){
             if(debug_en) printf("cd matched");
             no_fork = 1 ; 
-
+            
             if(strcmp(cmd_list[0],"alias")==0) {
                 ret_val = set_alias(cmd_list[1],cmd_list[2]);
                 continue;
@@ -246,48 +246,48 @@ int main(int argc,char *argv[]) {
                 ret_val = set_config(cmd_list[1],cmd_list[2]);
                 continue;
             }
-
+            
         }
         if(no_fork == 1 ) {
             ret_val = execute(&cmd_list,0);
         } else {
-        pid = fork();
-        if(pid == -1 ) {
-            perror("fork_error:");
-            exit(EXIT_FAILURE);
-        }else if(pid != 0) {
-            // Parent process 
-	        if(exit_reg_once == 0 ) { 
+            pid = fork();
+            if(pid == -1 ) {
+                perror("fork_error:");
+                exit(EXIT_FAILURE);
+            }else if(pid != 0) {
+                // Parent process 
+                if(exit_reg_once == 0 ) { 
                     i	 = atexit(bye);
-	        exit_reg_once = 1 ;
-	        }
-            if(send_bg == 0 ) { 
-                waitpid(-1,&status,0);
-                if(WIFEXITED(status)) {
-                    if(debug_en) printf("Child %d exited properly\n",pid);
+                    exit_reg_once = 1 ;
+                }
+                if(send_bg == 0 ) { 
+                    waitpid(-1,&status,0);
+                    if(WIFEXITED(status)) {
+                        if(debug_en) printf("Child %d exited properly\n",pid);
+                    }else{
+                        if(debug_en) printf("Child %d NOT exited properly\n",pid);
+                    }
                 }else{
-                    if(debug_en) printf("Child %d NOT exited properly\n",pid);
+                    printf("bg %d\n",pid);
                 }
             }else{
-                printf("bg %d\n",pid);
+                if(debug_en) printf("child : %s cmd_address = %x \n",cmd_list[0],(int)&cmd_list);
+                ret_val = execute(&cmd_list,0);
+                if(ret_val == -1 ) {
+                    perror("exe_error:");
+                    return 0;
+                }else{
+                    return 1;
+                }
             }
-        }else{
-            if(debug_en) printf("child : %s cmd_address = %x \n",cmd_list[0],(int)&cmd_list);
-            ret_val = execute(&cmd_list,0);
-            if(ret_val == -1 ) {
-                perror("exe_error:");
-                return 0;
-            }else{
-                return 1;
-            }
-        }
         }
         //free(line);
         //free(line_list);
-	for(i=0;i<len;i++){
-	    //free(cmd_list[i]);
-	}
-//	//free(cmd_list);
+        for(i=0;i<len;i++){
+            //free(cmd_list[i]);
+        }
+        //	//free(cmd_list);
     } 
     return 0;
 }
@@ -305,31 +305,31 @@ int is_empty(char *line){
     }
     return res;
 }
- 
+
 int get_non_empty_line(int fd,char **line) {
-int idx;
-int bytes_read;
-char *buf;
-char *str; 
-str = *line;
-isMemAllocated(buf = (char *) malloc(4));
-idx = 0;
-while((bytes_read = read(fd,buf,1))>0){
-    if (debug_en) printf("Read from file  %c  %d \n",buf[0],buf[0]);
-    if(buf[0] == 0xA) {
-        *(str+idx) = 0;
-        break;
-    }else{
-        *(str+idx) = buf[0];
-        idx++;
-        *(str+idx) =0;
+    int idx;
+    int bytes_read;
+    char *buf;
+    char *str; 
+    str = *line;
+    isMemAllocated(buf = (char *) malloc(4));
+    idx = 0;
+    while((bytes_read = read(fd,buf,1))>0){
+        if (debug_en) printf("Read from file  %c  %d \n",buf[0],buf[0]);
+        if(buf[0] == 0xA) {
+            *(str+idx) = 0;
+            break;
+        }else{
+            *(str+idx) = buf[0];
+            idx++;
+            *(str+idx) =0;
+        }
     }
+    if (debug_en) printf("output = %s \n",*line);
+    //*line = str;
+    return idx;
 }
-if (debug_en) printf("output = %s \n",*line);
-//*line = str;
-return idx;
-}
- 
+
 int _get_non_empty_line(int fd,char *** line_list){
     int empty_line = TRUE;
     int bytes_read;
@@ -355,25 +355,25 @@ int _get_non_empty_line(int fd,char *** line_list){
         bytes_read = read(fd,buf,256);
         if(debug_en) printf("bytes read = %d ",bytes_read); 
         for(i=0;i<bytes_read;i++){
-           if(buf[i] == 0xA){
-               //Line ends here
-               idx = 0;
-                 if(is_empty(str)==FALSE){
+            if(buf[i] == 0xA){
+                //Line ends here
+                idx = 0;
+                if(is_empty(str)==FALSE){
                     cmd_list[line_num++] = str;
                     str = (char *) malloc(256);
                     if(str == NULL) printf("Memory allocation failed\n");
-               }
-               empty_line = TRUE;
-           }else{
+                }
+                empty_line = TRUE;
+            }else{
                 str[idx++] = buf[i];
-           }
-	   success = 1 ;
+            }
+            success = 1 ;
         }
         if (bytes_read < 256 ) eof = 1 ; 
-  }
-  //free(buf);
-  *line_list =  cmd_list;    
-  return success;
+    }
+    //free(buf);
+    *line_list =  cmd_list;    
+    return success;
 }
 
 int  read_command(char **in_cmd){
