@@ -42,6 +42,7 @@ int my_pid ;
 int get_non_empty_line(int ,char **);
 void show_prompt();
 int read_command(char **);
+int is_empty(char *);
 
 int alias_fd;
 char *alias_file;
@@ -58,12 +59,10 @@ void bye(){
         write_alias(&alias_s,alias_fd);
         close(alias_fd);
     }
-    //        free(p);
 }
 
 int main(int argc,char *argv[]) {
-    int i,j,k;
-    char **line_list;
+    int i;
     char **cmd_list;
     int ret_val=-1;
     int len=0; 
@@ -155,7 +154,6 @@ int main(int argc,char *argv[]) {
             show_prompt();
             read_command(&line);
             if(is_empty(line)){
-                //free(line);
                 continue;
             }
         }else{
@@ -172,12 +170,10 @@ int main(int argc,char *argv[]) {
                 }else{
                     if(debug_en) write_alias(&alias_s,STD_OUTPUT);
                     close(alias_fd);
-                    //free(line_list);
                     chdir(home);
                 }
                 continue;
             }else{
-                //line = line_list[line_num];
                 if(cmd_mode == 0 ) { 
                     line_full = get_non_empty_line(prf_fd,&line);
                 } else {
@@ -282,12 +278,6 @@ int main(int argc,char *argv[]) {
                 }
             }
         }
-        //free(line);
-        //free(line_list);
-        for(i=0;i<len;i++){
-            //free(cmd_list[i]);
-        }
-        //	//free(cmd_list);
     } 
     return 0;
 }
@@ -328,52 +318,6 @@ int get_non_empty_line(int fd,char **line) {
     if (debug_en) printf("output = %s \n",*line);
     //*line = str;
     return idx;
-}
-
-int _get_non_empty_line(int fd,char *** line_list){
-    int empty_line = TRUE;
-    int bytes_read;
-    char *buf;
-    int eof = 0;
-    char *str;
-    int i;
-    char **cmd_list;
-    int line_num = 0;
-    int idx=0;
-    int success = 0 ;
-    cmd_list = (char **) malloc(256);
-    if(cmd_list == NULL) {
-        printf("Memory allocation failed\n");
-        perror("error");
-        exit(EXIT_FAILURE);
-    }
-    buf = (char *) malloc(256);
-    while(!eof){
-        //printf("WhileE\n");
-        str = (char *) malloc(256);
-        if(str == NULL) printf("Memory allocation failed\n");
-        bytes_read = read(fd,buf,256);
-        if(debug_en) printf("bytes read = %d ",bytes_read); 
-        for(i=0;i<bytes_read;i++){
-            if(buf[i] == 0xA){
-                //Line ends here
-                idx = 0;
-                if(is_empty(str)==FALSE){
-                    cmd_list[line_num++] = str;
-                    str = (char *) malloc(256);
-                    if(str == NULL) printf("Memory allocation failed\n");
-                }
-                empty_line = TRUE;
-            }else{
-                str[idx++] = buf[i];
-            }
-            success = 1 ;
-        }
-        if (bytes_read < 256 ) eof = 1 ; 
-    }
-    //free(buf);
-    *line_list =  cmd_list;    
-    return success;
 }
 
 int  read_command(char **in_cmd){
