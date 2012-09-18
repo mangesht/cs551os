@@ -10,19 +10,19 @@ struct assoc_ar{
 };
 
 void init(struct assoc_ar* ar){
-   int i;
-   ar->max_cur_size = 256;
-   ar->max_ov_tbl_size = 8;
-   ar->cur_size = 0;
-   ar->ov_tbl_size = 0 ;
-   ar->key_tbl = (char **)malloc((ar->max_cur_size+ar->max_ov_tbl_size) * sizeof(char *));
-   ar->val_tbl = (char **)malloc((ar->max_cur_size+ar->max_ov_tbl_size) * sizeof(char *));
-   ar->hit_idx = (int *) malloc(ar->max_cur_size * sizeof(int));
-   for(i=0;i< (ar->max_cur_size+ar->max_ov_tbl_size); i++) {
-       ar->key_tbl[i] = (char *) malloc(256);
-       ar->val_tbl[i] = (char *) malloc(256);
-       if(i<ar->max_cur_size) ar->hit_idx[i] = -1;
-   }
+    int i;
+    ar->max_cur_size = 256;
+    ar->max_ov_tbl_size = 8;
+    ar->cur_size = 0;
+    ar->ov_tbl_size = 0 ;
+    ar->key_tbl = (char **)malloc((ar->max_cur_size+ar->max_ov_tbl_size) * sizeof(char *));
+    ar->val_tbl = (char **)malloc((ar->max_cur_size+ar->max_ov_tbl_size) * sizeof(char *));
+    ar->hit_idx = (int *) malloc(ar->max_cur_size * sizeof(int));
+    for(i=0;i< (ar->max_cur_size+ar->max_ov_tbl_size); i++) {
+        ar->key_tbl[i] = (char *) malloc(256);
+        ar->val_tbl[i] = (char *) malloc(256);
+        if(i<ar->max_cur_size) ar->hit_idx[i] = -1;
+    }
 }
 
 unsigned char get_hash(char *p){
@@ -132,15 +132,15 @@ void write_alias(struct assoc_ar *ar,int fd){
             if(debug_en) printf("%s",p);
         }
     }
-//    close(fd);
+    //    close(fd);
 }
 
 void print_array(struct assoc_ar* ar){
-  int i,j=0;
-  for(i=0;i<8;i++){
-    printf("value = %s\n",ar->key_tbl[i]);
-  }
- 
+    int i,j=0;
+    for(i=0;i<8;i++){
+        printf("value = %s\n",ar->key_tbl[i]);
+    }
+    
 }
 
 /*
@@ -167,34 +167,34 @@ char * read_command(){
 
 
 int main(){
-  char *p = "Home";
-  char *key;
-  char *val;
-   struct assoc_ar alias_s;
-
-  init(&alias_s);
-  p = (char *) malloc(256);
-  key = (char *) malloc(256);
-  val = (char *) malloc(256);
-  while(1) {
-    printf("Enter your Choice 1 : Set value 2 : Get value  ");
-    p = read_command();  
-    printf("Enter Key ");
-    key = read_command();
-    if(strcmp(p,"1")==0) {
-        printf("Enter Value ");
-        val = read_command();
-        add(&alias_s,key,val);
-        if((val=get(&alias_s,key)) != NULL ) printf("Added key =%s Val = %s \n",key,val);
-        else printf("Error: Could not get for key %s \n",key);
-    }else{
-        if((val=get(&alias_s,key)) != NULL ) printf("Added key =%s Val = %s \n",key,val);
-        else printf("Error: Could not get for key %s \n",key);
+    char *p = "Home";
+    char *key;
+    char *val;
+    struct assoc_ar alias_s;
+    
+    init(&alias_s);
+    p = (char *) malloc(256);
+    key = (char *) malloc(256);
+    val = (char *) malloc(256);
+    while(1) {
+        printf("Enter your Choice 1 : Set value 2 : Get value  ");
+        p = read_command();  
+        printf("Enter Key ");
+        key = read_command();
+        if(strcmp(p,"1")==0) {
+            printf("Enter Value ");
+            val = read_command();
+            add(&alias_s,key,val);
+            if((val=get(&alias_s,key)) != NULL ) printf("Added key =%s Val = %s \n",key,val);
+            else printf("Error: Could not get for key %s \n",key);
+        }else{
+            if((val=get(&alias_s,key)) != NULL ) printf("Added key =%s Val = %s \n",key,val);
+            else printf("Error: Could not get for key %s \n",key);
+        }
+        //printf("hash for %s = %d\n",p,(int)get_hash(p));
     }
-    //printf("hash for %s = %d\n",p,(int)get_hash(p));
-  }
-return 0;
-
+    return 0;
+    
 }
 
 */
