@@ -1,0 +1,63 @@
+
+
+User application process can call following functions 
+These are the system calls that we have to implement.
+
+* Normal message passing operations system calls
+
+int deposit(int *dst, char * message)
+Usage: 
+int ret;
+int dst[n];
+dst[0] = some_pid;
+dst[1] = other_pip;
+dst[2] = NULL
+char message[255];
+
+ret = deposit(dst,message)
+// int *dst -> list of destination process ids. Instead of int array it would defined as process Id array. I saw that typedef somewhere
+// The message to be sent is to be copied in chr * message
+
+int retrieve(char *message) 
+Usage 
+ret = retrieve(&message)
+// This function gets the oldest message from the mailbox, it created
+
+*****************************************
+Administrative system calls 
+*****************************************
+(1)
+int create_mailbox(int permissions)
+This callback creates the mailbox the specified permissions.The bits in permission are mapped to SELF,GROUP,EVERYONE . These permissions puts restriction on the other processes about registering to this mailbox.
+Ex: If a process creates mailbox with GROUP permission. Then only processes in the same groups as the creator of mailbox are allowed to register / send messages to this process.
+The call returns the id of mailbox created. Negative values indicate eror in operation 
+Usage:
+int SELF = 0x4
+int GROUP = 0x2
+int EVERYONE = 0x1
+int perm;
+perm = EVERYONE ; 
+ret = create_mailbox(perm);
+
+(2) 
+int destroy_mailbox(int id) 
+Deletes the mailbox created by the process. Only the process that created the mailbox is authorized to delete mailbox. The messages in the mailbox are discarded.
+
+(3) int get_av_mailboxes(int *mb_list)
+The function gets the list of created mailboxes along with creator process id. The list of mailboxes to which the current cannot subscribe is not included. This way the process cannot even try to be malicious about other mailboxes.
+The return mb_list is in following form 
+mb_list[0] = mb_0_id 
+mb_list[1] = mb_0_creater_pid
+.
+.
+mb_list[2*n] = mb_m_id
+mb_list[2*n+1] = mb_m_creater_pid
+
+It returns the number of mailbox information packed in mb_list.
+0 indicates that no receiver mailbox is registered so far.
+
+
+
+
+
+
