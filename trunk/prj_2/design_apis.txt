@@ -18,9 +18,9 @@ ret = deposit(dst,message)
 // int *dst -> list of destination process ids. Instead of int array it would defined as process Id array. I saw that typedef somewhere
 // The message to be sent is to be copied in chr * message
 
-int retrieve(char *message) 
+int retrieve(int source , char *message) 
 Usage 
-ret = retrieve(&message)
+ret = retrieve(src,&message)
 // This function gets the oldest message from the mailbox, it created
 
 *****************************************
@@ -55,6 +55,15 @@ mb_list[2*n+1] = mb_m_creater_pid
 
 It returns the number of mailbox information packed in mb_list.
 0 indicates that no receiver mailbox is registered so far.
+
+(4) 
+int register(int mb_id)
+This process registers with the mailbox for sending messages to a particular process. The registering is added to have security to the mailbox. The registered processes can only send messages to the receive process. If a sender is not in the registered list the message from sender is dropped.
+
+
+(5) 
+int get_senders(int *sender_list)
+The function gets the list of senders registered to send the messages to its mailbox. The sender_list contains the process ids of the sender processes. It is required to do retrieve call.
 
 
 
