@@ -94,7 +94,7 @@ do_printmessage,		/* 69 = unused  */
 	no_sys,		/* 76 = (reboot) */
 	do_svrctl,	/* 77 = svrctl */
 	no_sys,		/* 78 = (sysuname) */
-	no_sys,		/* 79 = unused */
+	do_destroy_mailbox,		/* 79 = unused */
 	do_getdents,	/* 80 = getdents */
 	do_llseek,	/* 81 = llseek */
 	do_fstatfs,	/* 82 = fstatfs */
@@ -112,30 +112,23 @@ do_printmessage,		/* 69 = unused  */
 	do_ftruncate,	/* 94 = truncate */
 	do_chmod,	/* 95 = fchmod */
 	do_chown,	/* 96 = fchown */
-	no_sys,		/* 97 = unused */
+	do_deposit,		/* 97 = unused */
 	no_sys,		/* 98 = (sprofile) */
 	no_sys,		/* 99 = (cprofile) */
 	no_sys,		/* 100 = (exec_newmem) */
 	no_sys,		/* 101 = (srv_fork) */
 	no_sys,		/* 102 = (exec_restart) */
-	no_sys,		/* 103 = unused */
+	do_retrieve,		/* 103 = unused */
 	no_sys,		/* 104 = (getprocnr) */
-	no_sys,		/* 105 = unused */
-	no_sys,		/* 106 = unused */
+	do_create_mailbox,		/* 105 = unused */
+    no_sys,      /*  106 issetugid */ 
 	no_sys,		/* 107 = (getepinfo) */
-	no_sys,		/* 108 = unused */
-	no_sys,		/* 109 = unused */
-	no_sys,		/* 110 = unused */
+	do_get_av_mailboxes,		/* 108 = unused */
+	do_register,		/* 109 = unused */
+	do_get_senders,		/* 110 = unused */
 	no_sys,		/* 111 = (srv_kill) */
 	do_gcov_flush,	/* 112 = gcov_flush */
 	no_sys,		/* 113 = (getsid) */
-    do_deposit , 
-    do_retrieve,
-    do_create_mailbox,
-    do_destroy_mailbox,
-    do_get_av_mailboxes,
-    do_register,
-    do_get_senders,
 };
 /* This should not fail with "array size is negative": */
 extern int dummy[sizeof(call_vec) == NCALLS * sizeof(call_vec[0]) ? 1 : -1];
