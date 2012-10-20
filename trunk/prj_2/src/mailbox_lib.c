@@ -1,4 +1,16 @@
+#include<lib.h>
+#include<unistd.h>
 
+/* List of functions defined here 
+PUBLIC int deposit(int *dst, char *msg){
+PUBLIC int retrieve(int source , char *message) 
+PUBLIC int destroy_mailbox(int id) 
+PUBLIC int create_mailbox(int permissions)
+PUBLIC int get_av_mailboxes(int *mb_list)
+PUBLIC int register(int mb_id) {
+PUBLIC int get_senders(int *sender_list)
+
+*/
 
 // message 7 data structure for reference 
 // It usage in our project
