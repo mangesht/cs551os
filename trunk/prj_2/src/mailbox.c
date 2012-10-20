@@ -42,6 +42,7 @@ void lprint(char * format, ...)
 
 PUBLIC int do_deposit()
 {
+   printf("Do deposit called ");
    lprint("Do deposit called \n");
    return 0;
 }
@@ -62,7 +63,7 @@ PUBLIC int do_get_av_mailboxes()
 {
     return 0;
 }
-PUBLIC int do_register() 
+PUBLIC int do_register_mb() 
 {
     return 0;
 }

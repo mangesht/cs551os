@@ -124,7 +124,7 @@ do_printmessage,		/* 69 = unused  */
     no_sys,      /*  106 issetugid */ 
 	no_sys,		/* 107 = (getepinfo) */
 	do_get_av_mailboxes,		/* 108 = unused */
-	do_register,		/* 109 = unused */
+	do_register_mb,		/* 109 = unused */
 	do_get_senders,		/* 110 = unused */
 	no_sys,		/* 111 = (srv_kill) */
 	do_gcov_flush,	/* 112 = gcov_flush */
