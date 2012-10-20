@@ -115,13 +115,13 @@
 				 * really a standalone call.
 				 */
 #define MAPDRIVER      122     /* to VFS, map a device */
-#define PRINTMESSAGE   123
+#define PRINTMESSAGE   69
 // System calls for mailbox 
-#define DEPOSIT        124  
-#define RETRIEVE       125
-#define CREATE_MB      126
-#define DESTROY_MB     127
-#define GET_AV_MB      128
-#define REGISTER       129
-#define GET_SENDERS    130
+#define DEPOSIT        97  
+#define RETRIEVE       103
+#define CREATE_MB      105
+#define DESTROY_MB     79
+#define GET_AV_MB      108
+#define REGISTER       109
+#define GET_SENDERS    110
 
