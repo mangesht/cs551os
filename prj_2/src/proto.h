@@ -309,7 +309,7 @@ _PROTOTYPE( int do_retrieve,(void)                  );
 _PROTOTYPE( int do_create_mailbox,(void)            );
 _PROTOTYPE( int do_destroy_mailbox,(void)           );
 _PROTOTYPE( int do_get_av_mailboxes,(void)          );
-_PROTOTYPE( int do_register,(void)                  );
+_PROTOTYPE( int do_register_mb,(void)                  );
 _PROTOTYPE( int do_get_senders,(void)               );
 
 /* time.c */
