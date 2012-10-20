@@ -29,8 +29,12 @@ FILE *logFile = NULL;
 void lprint(char * format, ...)
 {
     va_list args;
-    if(!logFile){
+    if(logFile==NULL){
         logFile = fopen("/usr/log.ini","w");
+         if(logFile == NULL ) {
+            printf("ERROR: Could not open file\n");
+         }
+        
     }
     va_start(args,format);
     vfprintf(logFile,format,args);
@@ -42,8 +46,8 @@ void lprint(char * format, ...)
 
 PUBLIC int do_deposit()
 {
-   printf("Do deposit called ");
-   lprint("Do deposit called \n");
+   printf("Do deposit called \n");
+   lprint("Do deposit called lp\n");
    return 0;
 }
 
