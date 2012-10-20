@@ -1,3 +1,8 @@
 The message structure is defined in /usr/src/include/minix/ipc.h
 sys/types holds all the typedefs
 
+// The list of files that we are going to modify 
+
+/usr/src/lib/libc/sys-minix/mailbox_lib.c // This is new file We created
+/usr/include/minix/callnr.c
+/usr/src/servers/vfs/misc.c // This has do functions 
