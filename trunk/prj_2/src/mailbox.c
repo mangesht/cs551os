@@ -27,7 +27,7 @@
 #define MAX_MAILBOXES 10
 #define MB_CAPACITY 10
 
-int SELF = 0x4;
+int USER = 0x4;
 int GROUP = 0x2;
 int EVERYONE = 0x1;
 
@@ -43,7 +43,7 @@ int num_active_mailboxes = 0 ;
 
 // Queue: Provides nodes to hold the mail messages
  struct MailNode{
-	struct  Message msg;
+	struct  Message_mb msg;
 	struct MailNode *next;
 };
 
@@ -64,7 +64,10 @@ struct MailBox{
 	struct MailNode *front ;
 	struct MailNode *rear ;
 };
-struct MailBox mbList[MAX_MAILBOXES];
+struct MailBox** mbList = NULL ; 
+int initialize = 0 ; 
+
+//[MAX_MAILBOXES];
 
 
 void lprint(char * format, ...)
@@ -109,44 +112,44 @@ int set_free_id(int mb_id) {
 int get_mb_id(int rx_pid) { 
     int i;
     for(i=0;i<MAX_MAILBOXES;i++) { 
-        if(mbList[i].owner_pid == rx_pid) {
+        if(mbList[i]->owner_pid == rx_pid) {
             return i;
         }
     }
     return -1;
 }
 
-int addMailBox(struct MailBox mb) {
+int addMailBox(struct MailBox *mb) {
     int mb_id;
 	mb_id     = get_free_id();
     if(mb_id < 0) {
         printf("ERROR : mailbox space full \n");
         return -1;
     }else{
-        mbList[mb_id] = mb;
+       mbList[mb_id] = mb;
     }
     return mb_id;
 }
 int create_mailbox(int owner_pid,int owner_uid,int owner_gid,int permissions)
 {
     int i;
-    struct MailBox mb;
-    mb = (struct Mailbox) malloc(sizeof(struct MailBox));
-    mb.owner_pid = owner_pid ;
-    mb.owner_uid = owner_uid ;
-    mb.owner_gid = owner_gid ;
-	mb.perm      = permissions;
+    struct MailBox *mb;
+    mb = (struct Mailbox *) malloc(sizeof(struct MailBox));
+    mb->owner_pid = owner_pid ;
+    mb->owner_uid = owner_uid ;
+    mb->owner_gid = owner_gid ;
+	mb->perm      = permissions;
     for(i=0;i<MAX_SENDERS;i++) { 
-        mb.senders[i] = -1 ;
-        mb.suspended_sender = -1 ; 
+        mb->senders[i] = -1 ;
+        mb->suspended_sender[i] = -1 ; 
     }
-    mb.num_senders = 0 ;
-    mb.num_messages = 0 ;
-    mb.sus_sender_idx = 0;
-    mb.mb_id = addMailBox(mb);
-    return mb.mb_id;
+    mb->num_senders = 0 ;
+    mb->num_messages = 0 ;
+    mb->sus_sender_idx = 0;
+    mb->mb_id = addMailBox(mb);
+    return mb->mb_id;
 }
-int putMsg(struct MailBox *m, struct  Message_mb mail)
+int putMsg(struct MailBox *m, struct  Message_mb * mail)
 {
     struct MailNode *new_node ;
     if(m->num_messages >= MB_CAPACITY) {
@@ -155,7 +158,7 @@ int putMsg(struct MailBox *m, struct  Message_mb mail)
     }
     new_node = (struct MailNode *)(malloc(sizeof(struct MailNode)));
     new_node->next = NULL ;
-	new_node->msg = mail;
+	new_node->msg = *mail;
     if(m->front == NULL)
     {    
 		m->front = (struct MailNode *)new_node;
@@ -171,8 +174,8 @@ int putMsg(struct MailBox *m, struct  Message_mb mail)
 }
 int isValidSender(int dest_id,int sender_pid) { 
    int i;
-    for(i=0;i<mbList[dest_id].MAX_SENDERS;i++){ 
-         if(mbList[dest_id].senders[i] == sender_pid) {
+    for(i=0;i<mbList[dest_id]->num_senders;i++){ 
+         if(mbList[dest_id]->senders[i] == sender_pid) {
             return 1;
          }
     }   
@@ -219,11 +222,11 @@ PUBLIC int do_deposit()
                     // Check authorization 
                     if(isValidSender(dest_id,tx_pid)){
                     // Send message only when destination seems valid
-                        put_msg_ret_val= putMsg(&mbList[dest_id], msg);
+                        put_msg_ret_val= putMsg(mbList[dest_id], msg);
                         if(put_msg_ret_val == -1) {
                             // Mailbox is full, the task needs to be blocked
                             // Add to the mailbox's blocked list
-                            mbList[dest_id].suspended_sender[sus_sender_idx++] = tx_pid;
+                            mbList[dest_id]->suspended_sender[ mbList[dest_id]->sus_sender_idx++] = tx_pid;
                             suspend_sender =1; 
                       }
                     }
@@ -249,12 +252,11 @@ PUBLIC int do_destroy_mailbox()
     int rx_pid;
     int del_mb_id;
     int ret_val = 0 ;
-    struct MailBox temp_mb;
+    struct MailBox *temp_mb;
     rx_pid    = m_in.m7_i1;
     del_mb_id = m_in.m7_i4;
-
     if((del_mb_id < MAX_MAILBOXES ) && (mbList[del_mb_id] != NULL) ) { 
-        if(mbList[del_mb_id].owner_pid == rx_pid) {
+        if(mbList[del_mb_id]->owner_pid == rx_pid) {
             // You are authorized to delete 
            temp_mb = mbList[del_mb_id];
            mbList[del_mb_id] = NULL;
@@ -279,6 +281,10 @@ PUBLIC int do_create_mailbox()
     rx_uid = m_in.m7_i2;
     rx_gid = m_in.m7_i3;
     perm   = m_in.m7_i4;
+    if(initialize  != 50 ) { 
+       initialize = 50 ;
+       mbList = (struct MailBox **) malloc(MAX_MAILBOXES*sizeof(struct MailBox * ));
+    }
     mb_id = create_mailbox(rx_pid,rx_uid,rx_gid,perm);
     return mb_id;
 }
@@ -297,9 +303,9 @@ PUBLIC int do_get_av_mailboxes()
     mb_idx = 0 ;
     for(i=0;i<MAX_MAILBOXES;i++) {
         if(mbList[i] != NULL) {
-                if((mbList[i].perm & EVERYONE) || (( mbList[i].perm & GROUP ) && mbList[i].owner_gid == tx_gid ) || ((mbList[i].perm & SELF) & mbList[i].owner_uid == tx_uid)) { 
-                    mailingList[2*mb_idx] =mbList[i].mb_id; 
-                    mailingList[2*mb_idx+1] =mbList[i].owner_pid; 
+                if((mbList[i]->perm & EVERYONE) || (( mbList[i]->perm & GROUP ) && mbList[i]->owner_gid == tx_gid ) || ((mbList[i]->perm & USER) && mbList[i]->owner_uid == tx_uid)) { 
+                    mailingList[2*mb_idx] =mbList[i]->mb_id; 
+                    mailingList[2*mb_idx+1] =mbList[i]->owner_pid; 
                     mb_idx++;
                 }
          }
@@ -321,14 +327,15 @@ PUBLIC int do_register_mb()
     tx_uid = m_in.m7_i2;
     tx_gid = m_in.m7_i3;
     mb_idx = m_in.m7_i4;
-    if((mbList[mb_idx].perm & EVERYONE) || (( mbList[mb_idx].perm & GROUP ) && mbList[mb_idx].owner_gid == tx_gid ) || ((mbList[mb_idx].perm & SELF) & mbList[mb_idx].owner_uid == tx_uid)) { 
+    if((mbList[mb_idx]->perm & EVERYONE) || (( mbList[mb_idx]->perm & GROUP ) && mbList[mb_idx]->owner_gid == tx_gid ) || ((mbList[mb_idx]->perm & USER) && mbList[mb_idx]->owner_uid == tx_uid)) { 
         // You are authorized to register 
         for(i=0;i<MAX_SENDERS;i++){
-            if(mbList[mb_idx].senders[i] == tx_pid) {
+            if(mbList[mb_idx]->senders[i] == tx_pid) {
                 printf("ERROR : Sender already registerd \n");
-            }else if(mbList[mb_idx].senders[i] == -1) { 
+            }else if(mbList[mb_idx]->senders[i] == -1) { 
                 // This is right place to add the sender
-                mbList[mb_idx].senders[i] = tx_pid;
+                mbList[mb_idx]->senders[i] = tx_pid;
+                mbList[mb_idx]->num_senders++;
             }
         }   
     }
@@ -342,13 +349,17 @@ PUBLIC int do_get_senders()
     int *senderList;
     int i;
     int idx;
+    struct MailBox *temp_mb;
     senderList = (int *) malloc (MAX_SENDERS * sizeof(int));
-    if((mb_id < MAX_MAILBOXES ) && (mbList[mb_id] != NULL) ) { 
-        if(mbList[del_mb_id].owner_pid == rx_pid) {
+    mb_id = m_in.m7_i4;
+    temp_mb = (struct MailBox *) mbList[mb_id];
+    //if((mb_id < MAX_MAILBOXES ) && (mbList[mb_id] != NULL) ) { 
+    if((mb_id < MAX_MAILBOXES ) && (temp_mb != NULL) ) { 
+        if(mbList[mb_id]->owner_pid == rx_pid) {
             // You are authorized
             for(i=0,idx=0;i<MAX_SENDERS;i++) { 
-               if(mbList[mb_id].senders[i] >= 0 ) {
-                    senderList[idx++] = mbList[mb_id].senders[i]; 
+               if(mbList[mb_id]->senders[i] >= 0 ) {
+                    senderList[idx++] = mbList[mb_id]->senders[i]; 
                } 
             }
             sys_datacopy(VFS_PROC_NR,senderList,rx_pid,m_in.m7_p1,idx);
