@@ -17,7 +17,7 @@ PUBLIC int deposit(int *dst, char *msg){
  //   mes.m7i1 = getuid();
  //   mes.m7i2 = getgid();
     mes.m_source = getpid();
-    mes.m_type = 7 ;
+//    mes.m_type = 7 ;
     mes.m7p1 = msg; 
     mes.m7p2 = dst;
     return ( (int) _syscall(PM_PROC_NR,DEPOSIT,&mes));
@@ -29,7 +29,7 @@ PUBLIC int retrieve(int source , char *message)
 //    mes.m7i1 = getuid();
 //    mes.m7i2 = getgid();
     mes.m_source = getpid();
-    mes.m_type = 7 ;
+//    mes.m_type = 7 ;
     mes.m7p1  = msg;
     return ( (int) _syscall(PM_PROC_NR,RETRIEVE,&mes));
 }
@@ -39,7 +39,7 @@ PUBLIC int create_mailbox(int permissions)
     mes.m7i1 = getuid();
     mes.m7i2 = getgid();
     mes.m_source = getpid();
-    mes.m_type = 7 ;
+//    mes.m_type = 7 ;
     mes.m7i3 = permissions;
     return ( (int) _syscall(PM_PROC_NR,CREATE_MB,&mes));
 }
@@ -50,7 +50,7 @@ PUBLIC int destroy_mailbox(int id)
 //    mes.m7i1 = getuid();
 //    mes.m7i2 = getgid();
     mes.m_source = getpid();
-    mes.m_type = 7 ;
+//    mes.m_type = 7 ;
     mes.m7i3 = id;
     return ( (int) _syscall(PM_PROC_NR,DESTROY_MB,&mes));
 
@@ -61,7 +61,7 @@ PUBLIC int get_av_mailboxes(int *mb_list)
     mes.m7i1 = getuid();
     mes.m7i2 = getgid();
     mes.m_source = getpid();
-    mes.m_type = 7 ;
+//    mes.m_type = 7 ;
     mes.m7p1 = mb_list;
     return ( (int) _syscall(PM_PROC_NR,GET_AV_MB,&mes));
 }
@@ -72,7 +72,7 @@ PUBLIC int register(int mb_id) {
     mes.m7i1 = getuid();
     mes.m7i2 = getgid();
     mes.m_source = getpid();
-    mes.m_type = 7 ;
+//    mes.m_type = 7 ;
     mes.m7i3 = mb_id;
     return ( (int) _syscall(PM_PROC_NR,REGISTER,&mes));
 
@@ -83,7 +83,7 @@ PUBLIC int get_senders(int *sender_list)
 //    mes.m7i1 = getuid();
 //    mes.m7i2 = getgid();
     mes.m_source = getpid();
-    mes.m_type = 7 ;
+//    mes.m_type = 7 ;
     mes.m7p1 = sender_list;
     return ( (int) _syscall(PM_PROC_NR,GET_SENDERS,&mes));
 }
