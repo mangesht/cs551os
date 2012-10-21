@@ -43,7 +43,7 @@ int num_active_mailboxes = 0 ;
 
 // Queue: Provides nodes to hold the mail messages
  struct MailNode{
-	struct  Message_mb msg;
+	struct  Message_mb *msg;
 	struct MailNode *next;
 };
 
@@ -61,6 +61,7 @@ struct MailBox{
     int sus_sender_idx;
     int num_senders;
     int num_messages;
+    int rx_suspended;
 	struct MailNode *front ;
 	struct MailNode *rear ;
 };
@@ -146,6 +147,7 @@ int create_mailbox(int owner_pid,int owner_uid,int owner_gid,int permissions)
     mb->num_senders = 0 ;
     mb->num_messages = 0 ;
     mb->sus_sender_idx = 0;
+    mb->rx_suspended = 0;
     mb->mb_id = addMailBox(mb);
     return mb->mb_id;
 }
@@ -158,7 +160,7 @@ int putMsg(struct MailBox *m, struct  Message_mb * mail)
     }
     new_node = (struct MailNode *)(malloc(sizeof(struct MailNode)));
     new_node->next = NULL ;
-	new_node->msg = *mail;
+	new_node->msg = mail;
     if(m->front == NULL)
     {    
 		m->front = (struct MailNode *)new_node;
@@ -172,6 +174,40 @@ int putMsg(struct MailBox *m, struct  Message_mb * mail)
     m->num_messages++; 
     return 0;
 }
+
+int getMsg(struct MailBox *mb,struct Message_mb *msg)
+{
+	struct  MailNode *prev=NULL;
+    struct  MailNode *cur= (struct  MailNode *)mb->rear;
+//	struct  Message msg;
+    int debug_en = 1 ;
+
+	if (mb->front == NULL) {
+   	    if(debug_en) printf("\nCannot Delete. Queue is empty \n");		
+        return -1;
+  	} else if (cur->next==NULL) {
+		msg = cur->msg;
+		free(mb->front);
+		mb->front=NULL;
+		mb->rear=NULL;
+	}else{
+		while(cur!=(struct  MailNode *)mb->front && cur->next !=NULL){
+			prev = cur;
+			cur = cur->next;
+			if(debug_en) printf("%s -> " , prev->msg->data);
+		}
+		msg =cur->msg;
+		free(mb->front);
+		prev->next=NULL;
+		mb->front=( struct  MailNode *)prev;
+	}
+    mb->num_messages--; 
+	return 0;
+}
+
+
+
+
 int isValidSender(int dest_id,int sender_pid) { 
    int i;
     for(i=0;i<mbList[dest_id]->num_senders;i++){ 
@@ -245,6 +281,24 @@ PUBLIC int do_deposit()
 
 PUBLIC int do_retrieve() 
 {
+    int mb_id;
+    int rx_pid;
+    int ret_get_msg;
+    struct Message_mb *msg;
+    msg = (struct Message_mb *) malloc(sizeof(struct Message_mb));
+    rx_pid = m_in.m7_i1;
+    mb_id = get_mb_id(rx_pid);
+    if(mb_id < 0) {
+        printf("Invalid user may not have created Mailbox\n");
+        return -1;
+    } 
+    ret_get_msg = getMsg(mbList[mb_id],msg);
+    if(ret_get_msg < 0) { 
+        printf("MailBox Empty \n");
+        // The process should be suspended
+        mbList[mb_id]->rx_suspended = 1 ; 
+    }
+    sys_datacopy(VFS_PROC_NR,msg->data,rx_pid,m_in.m7_p1,strlen(msg->data));
     return 0;
 }
 PUBLIC int do_destroy_mailbox() 
@@ -353,8 +407,7 @@ PUBLIC int do_get_senders()
     senderList = (int *) malloc (MAX_SENDERS * sizeof(int));
     mb_id = m_in.m7_i4;
     temp_mb = (struct MailBox *) mbList[mb_id];
-    //if((mb_id < MAX_MAILBOXES ) && (mbList[mb_id] != NULL) ) { 
-    if((mb_id < MAX_MAILBOXES ) && (temp_mb != NULL) ) { 
+    if((mb_id < MAX_MAILBOXES ) && (mbList[mb_id] != NULL) ) { 
         if(mbList[mb_id]->owner_pid == rx_pid) {
             // You are authorized
             for(i=0,idx=0;i<MAX_SENDERS;i++) { 
