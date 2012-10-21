@@ -16,7 +16,7 @@ PUBLIC int destroy_mailbox(int id);
 PUBLIC int create_mailbox(int permissions);
 PUBLIC int get_av_mailboxes(int *mb_list);
 PUBLIC int register_mb(int mb_id) ;
-PUBLIC int get_senders(int *sender_list);
+PUBLIC int get_senders(int mb_id, int *sender_list);
 
 //
 
@@ -73,7 +73,7 @@ PUBLIC int destroy_mailbox(int id)
 //    mes.m7_i3 = getgid();
     mes.m7_i1 = getpid();
 //    mes.m_type = 7 ;
-    mes.m7_i3 = id;
+    mes.m7_i4 = id;
     return ( (int) _syscall(VFS_PROC_NR,DESTROY_MB,&mes));
 
 }
@@ -98,12 +98,13 @@ PUBLIC int register_mb(int mb_id)
     mes.m7_i4 = mb_id;
     return ( (int) _syscall(VFS_PROC_NR,REGISTER,&mes));
 }
-PUBLIC int get_senders(int *sender_list)
+PUBLIC int get_senders(int mb_id, int *sender_list)
 {
     message mes;
 //    mes.m7_i2 = getuid();
 //    mes.m7_i3 = getgid();
     mes.m7_i1 = getpid();
+    mes.m7_i4 = mb_id;
 //    mes.m_type = 7 ;
     mes.m7_p1 = sender_list;
     return ( (int) _syscall(VFS_PROC_NR,GET_SENDERS,&mes));
