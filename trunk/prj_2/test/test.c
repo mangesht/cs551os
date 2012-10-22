@@ -47,7 +47,7 @@ int test_suite1(){
    test_id++;
    printf ( "\n\n------ Test  %d: get_av_mailboxes------\n", test_id);
    mb_list = (int * ) malloc (10 *2*sizeof(int));
-   retVal = get_av_mailboxes(&mb_list);
+   retVal = get_av_mailboxes(mb_list);
   if(retVal == -1){
 	   printf( "SYSTEM CALL FAIL: get_av_mailboxes FAILED \n" );
    }else {
