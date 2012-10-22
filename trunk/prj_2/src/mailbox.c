@@ -34,6 +34,7 @@ int EVERYONE = 0x1;
 FILE *logFile = NULL;
 int mb_id_pool = 0 ; 
 int num_active_mailboxes = 0 ;
+int senderDB[MAX_SENDERS * MAX_MAILBOXES] ; 
 
 /* Mail messages. This will be places in the mailbox */
  struct Message_mb{
@@ -47,6 +48,13 @@ int num_active_mailboxes = 0 ;
 	struct MailNode *next;
 };
 
+// structure for suspended senders' process information
+
+struct SuspendContext{
+    struct Message_mb *msg;
+    int *suspened_for;
+    int len_sus_for;
+};
 
 
 // Data structures 
@@ -66,6 +74,7 @@ struct MailBox{
 	struct MailNode *rear ;
 };
 struct MailBox** mbList = NULL ; 
+struct SuspendContext ** susContext;
 int initialize = 0 ; 
 
 //[MAX_MAILBOXES];
@@ -119,7 +128,38 @@ int get_mb_id(int rx_pid) {
     }
     return -1;
 }
-
+int get_sender_local_id(int sender_pid) { 
+    int ret_val;
+    int i;
+    ret_val = get_mb_id(sender_pid);
+    if(ret_val == -1) {
+        for(i=0;i<MAX_SENDERS * MAX_MAILBOXES;i++) { 
+            if(senderDB[i] == sender_pid) { 
+                return i ;
+            }
+        }
+    }else{
+        return ret_val;
+    }
+   return -1;
+}
+int set_sender_local_id(int sender_pid) {
+     int ret_val;
+     int i;
+     ret_val = get_mb_id(sender_pid);
+     if(ret_val == -1 ) {
+         for(i=MAX_MAILBOXES;i< MAX_SENDERS* MAX_MAILBOXES ; i++) {
+            if(senderDB[i] == -1) {
+                // This is the place for having mapping sender  pid 
+                senderDB[i] = sender_pid;
+                return i;
+            }
+         }
+     }else{
+        return ret_val;
+     }
+     return -1;
+}
 int addMailBox(struct MailBox *mb) {
     int mb_id;
     printf ("Entered addMailbox function\n");
@@ -237,6 +277,7 @@ PUBLIC int do_deposit()
    int tx_uid;
    int tx_gid;
    int dest_id;
+   int sus_dests[MAX_SENDERS];
    int suspend_sender;
    struct Message_mb *msg;
    dest = (int *) malloc(MAX_DEST * sizeof(int) );
@@ -269,7 +310,8 @@ PUBLIC int do_deposit()
                             // Mailbox is full, the task needs to be blocked
                             // Add to the mailbox's blocked list
                             mbList[dest_id]->suspended_sender[ mbList[dest_id]->sus_sender_idx++] = tx_pid;
-                            suspend_sender =1; 
+                            sus_dests[suspend_sender] = dest_id;
+                            suspend_sender++; 
                       }
                     }
                }
@@ -278,8 +320,20 @@ PUBLIC int do_deposit()
             break;
        } 
    } 
-   if(suspend_sender == 1 ) { 
+   if(suspend_sender >= 1 ) { 
       // Procedure to suspend 
+      // Update suspended list 
+      struct SuspendContext * cntx;
+      int this_local_id;
+      this_local_id = get_sender_local_id(tx_pid);
+      cntx = (struct SuspendContext *) malloc(sizeof(struct SuspendContext));
+      cntx->msg = msg ; 
+      cntx->suspened_for = (int *) malloc(sizeof(int) * suspend_sender);
+      for(i=0;i<suspend_sender;i++) { 
+        cntx->suspened_for[i] = sus_dests[i]; 
+      } 
+      cntx->len_sus_for = suspend_sender;
+      susContext[this_local_id] = cntx;
    } else { 
       return 0;
    }
@@ -338,6 +392,7 @@ PUBLIC int do_create_mailbox()
     int rx_gid;
     int mb_id;
     int perm;
+    int i;
     rx_pid = m_in.m7_i1;
     rx_uid = m_in.m7_i2;
     rx_gid = m_in.m7_i3;
@@ -345,6 +400,11 @@ PUBLIC int do_create_mailbox()
     if(initialize  != 50 ) { 
        initialize = 50 ;
        mbList = (struct MailBox **) malloc(MAX_MAILBOXES*sizeof(struct MailBox * ));
+       susContext=(struct SuspendContext **) malloc(MAX_MAILBOXES * MAX_SENDERS * sizeof(struct SuspendContext *));
+      for(i=0;i<MAX_MAILBOXES * MAX_SENDERS ; i++) { 
+          susContext[i] = NULL;
+      }
+
     }
     mb_id = create_mailbox(rx_pid,rx_uid,rx_gid,perm);
     return mb_id;
@@ -405,6 +465,7 @@ PUBLIC int do_register_mb()
 		printf ("\n\n NEW Entry created to register\n"); 
                 mbList[mb_idx]->senders[i] = tx_pid;
                 mbList[mb_idx]->num_senders++;
+                set_sender_local_id(tx_pid);
 		return 0;
             }
         }   
@@ -443,8 +504,3 @@ PUBLIC int do_get_senders()
 }
 
 
-PUBLIC int do_printmessage ()
-{
-
-   printf ( " Hellow world ! This is my system call \n");
-}
