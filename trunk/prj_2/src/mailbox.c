@@ -388,14 +388,17 @@ PUBLIC int do_register_mb()
         for(i=0;i<MAX_SENDERS;i++){
             if(mbList[mb_idx]->senders[i] == tx_pid) {
                 printf("ERROR : Sender already registerd \n");
+                return -1;
             }else if(mbList[mb_idx]->senders[i] == -1) { 
                 // This is right place to add the sender
                 mbList[mb_idx]->senders[i] = tx_pid;
                 mbList[mb_idx]->num_senders++;
+                return 0;
             }
         }   
+    } else { 
+        return -1;
     }
-    return 0;
 }
 
 PUBLIC int do_get_senders()
