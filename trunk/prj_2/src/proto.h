@@ -301,7 +301,6 @@ _PROTOTYPE( int do_statvfs, (void)					);
 _PROTOTYPE( int do_fstatvfs, (void)					);
 _PROTOTYPE( int do_rdlink, (void)					);
 _PROTOTYPE( int do_lstat, (void)					);
-_PROTOTYPE( int do_printmessage,(void)              );
 
 /* mailbox.c */ 
 _PROTOTYPE( int do_deposit,(void)                   );
