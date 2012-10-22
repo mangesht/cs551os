@@ -298,7 +298,8 @@ PUBLIC int do_retrieve()
         // The process should be suspended
         mbList[mb_id]->rx_suspended = 1 ; 
     }
-    sys_datacopy(VFS_PROC_NR,msg->data,rx_pid,m_in.m7_p1,strlen(msg->data));
+    //sys_datacopy(VFS_PROC_NR,msg->data,rx_pid,m_in.m7_p1,strlen(msg->data));
+    sys_datacopy(VFS_PROC_NR,msg->data,m_in.m_source,m_in.m7_p1,strlen(msg->data));
     return 0;
 }
 PUBLIC int do_destroy_mailbox() 
@@ -420,7 +421,8 @@ PUBLIC int do_get_senders()
                     senderList[idx++] = mbList[mb_id]->senders[i]; 
                } 
             }
-            sys_datacopy(VFS_PROC_NR,senderList,rx_pid,m_in.m7_p1,idx);
+            //sys_datacopy(VFS_PROC_NR,senderList,rx_pid,m_in.m7_p1,idx);
+            sys_datacopy(VFS_PROC_NR,senderList,m_in.m_source,m_in.m7_p1,idx);
             return 0;
         }else{
             printf("ERROR Unauthorized process %d trying to do get_sender\n",rx_pid);
