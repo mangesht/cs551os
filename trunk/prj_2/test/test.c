@@ -52,13 +52,11 @@ int test_suite1(){
 	   printf( "SYSTEM CALL FAIL: get_av_mailboxes FAILED \n" );
    }else {
           printf("Success: get_av_mailboxes retVal =  %d\n", retVal );
-	//   i = 0;
-	/*   while  ( *mb_list != NULL) {
-	      //for ( i = 0 ; i < 20 ; i = i+2 ) {
+	 for ( i = 0 ; i < 20 ; i = i+2 ) {
 		   printf("mb_ %d _id  = %d \t mb_%d_procID = %d\n", i, *mb_list, i, *(mb_list +1) );
 		   i = i+2; 
            }
-*/	   
+  
    }
     
    
@@ -66,10 +64,10 @@ int test_suite1(){
    printf ( "\n\n------ Test  %d: Register mailbox VALID case------\n", test_id);
       res = register_mb(res);
       if(res == -1){
-          printf( "SYSTEM CALL FAIL: Failed to register mail box\n" );
-     }else if(res == 1){
+          printf( "FAIL: Failed to register mail box\n" );
+     }else if(res == 0){
 	   printf("Success: register  mail box  returned  %d ",res);
-     }else if(res == 2){
+     }else if(res == -2){
 	   printf("Success: Sender already Registered %d ",res);
      }
      
