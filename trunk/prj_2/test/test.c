@@ -41,9 +41,7 @@ int test_suite1(){
           printf("Success: create mail box with everyone permission returned  %d ",res3);
    }
    
-   // THROWING AN ERROR : kernel: /usr/src/kernel/system/do_coopy.c:70: bad endpoint 561: proc 583 out of range
-   // do_copy :1 : seg 0x1, 561 not ok endpoint 
-
+   
    test_id++;
    printf ( "\n\n------ Test  %d: get_av_mailboxes------\n", test_id);
    mb_list = (int * ) malloc (10 *2*sizeof(int));
@@ -62,15 +60,27 @@ int test_suite1(){
    
    test_id++;
    printf ( "\n\n------ Test  %d: Register mailbox VALID case------\n", test_id);
-      res = register_mb(res);
-      if(res == -1){
+      retVal = register_mb(res);
+      if(retVal == -1){
           printf( "FAIL: Failed to register mail box\n" );
-     }else if(res == 0){
-	   printf("Success: register  mail box  returned  %d ",res);
-     }else if(res == -2){
-	   printf("Success: Sender already Registered %d ",res);
+     }else if(retVal == 0){
+	   printf("Success: register  mail box  returned \n");
+     }else if(retVal == -2){
+	   printf("Success: Sender already Registered \n");
      }
      
+   test_id++;
+   printf ( "\n\n------ Test  %d: Register mailbox Sending already exist------\n", test_id);
+      retVal = register_mb(res);
+      printf ( "%d", retVal);
+      if(retVal == -1){
+          printf( "FAIL: Failed to register mail box\n" );
+     }else if(retVal == 0){
+	   printf("FAIL: register  mail box  returned  \n");
+     }else if(retVal == -2){
+	   printf("Success: Sender already Registered \n ");
+     }
+   
    
 test_id++;
    printf ( "\n\n------ Test  %d: Register mailbox INVALID case------\n", test_id);
