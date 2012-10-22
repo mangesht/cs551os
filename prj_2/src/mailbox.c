@@ -360,12 +360,14 @@ PUBLIC int do_get_av_mailboxes()
                 if((mbList[i]->perm & EVERYONE) || (( mbList[i]->perm & GROUP ) && mbList[i]->owner_gid == tx_gid ) || ((mbList[i]->perm & USER) && mbList[i]->owner_uid == tx_uid)) { 
                     mailingList[2*mb_idx] =mbList[i]->mb_id; 
                     mailingList[2*mb_idx+1] =mbList[i]->owner_pid; 
+                    printf("get_av: list[%d] = %d list[%d] = %d ",mb_idx,mailingList[mb_idx],mb_idx+1,mailingList[mb_idx+1]);
                     mb_idx++;
                 }
          }
     }
     
-    sys_datacopy(VFS_PROC_NR,mailingList,tx_pid,m_in.m7_p1,2*mb_idx);
+    //sys_datacopy(VFS_PROC_NR,mailingList,tx_pid,m_in.m7_p1,2*mb_idx);
+    sys_datacopy(VFS_PROC_NR,mailingList,m_in.m_source,m_in.m7_p1,2*mb_idx);
     free(mailingList);
     return 0;
 }
