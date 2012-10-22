@@ -369,24 +369,15 @@ PUBLIC int do_get_av_mailboxes()
                 if((mbList[i]->perm & EVERYONE) || (( mbList[i]->perm & GROUP ) && mbList[i]->owner_gid == tx_gid ) || ((mbList[i]->perm & USER) && mbList[i]->owner_uid == tx_uid)) { 
                     mailingList[2*mb_idx] =mbList[i]->mb_id; 
                     mailingList[2*mb_idx+1] =mbList[i]->owner_pid; 
-<<<<<<< .mine
 		     printf("get_av: list[%d] = %d list[%d] = %d ",mb_idx,mailingList[2*mb_idx],mb_idx+1,mailingList[2*mb_idx+1]);
-=======
-                    printf("get_av: list[%d] = %d list[%d] = %d ",mb_idx,mailingList[mb_idx],mb_idx+1,mailingList[mb_idx+1]);
->>>>>>> .r98
                     mb_idx++;
                 }
          }
     }
     
-<<<<<<< .mine
     //sys_datacopy(VFS_PROC_NR,mailingList,tx_pid,m_in.m7_p1,2*mb_idx);
      sys_datacopy(VFS_PROC_NR,mailingList,m_in.m_source,m_in.m7_p1,2*mb_idx);
      	   
-=======
-    //sys_datacopy(VFS_PROC_NR,mailingList,tx_pid,m_in.m7_p1,2*mb_idx);
-    sys_datacopy(VFS_PROC_NR,mailingList,m_in.m_source,m_in.m7_p1,2*mb_idx);
->>>>>>> .r98
     free(mailingList);
     return 0;
 }
@@ -408,30 +399,17 @@ PUBLIC int do_register_mb()
         for(i=0;i<MAX_SENDERS;i++){
             if(mbList[mb_idx]->senders[i] == tx_pid) {
                 printf("ERROR : Sender already registerd \n");
-<<<<<<< .mine
 		return -2;
-=======
-                return -1;
->>>>>>> .r98
             }else if(mbList[mb_idx]->senders[i] == -1) { 
                 // This is right place to add the sender
 		printf ("\n\n NEW Entry created to register\n"); 
                 mbList[mb_idx]->senders[i] = tx_pid;
                 mbList[mb_idx]->num_senders++;
-<<<<<<< .mine
 		return 0;
-=======
-                return 0;
->>>>>>> .r98
             }
         }   
-    } else { 
-        return -1;
     }
-<<<<<<< .mine
     return -1;
-=======
->>>>>>> .r98
 }
 
 PUBLIC int do_get_senders()
@@ -453,13 +431,8 @@ PUBLIC int do_get_senders()
                     senderList[idx++] = mbList[mb_id]->senders[i]; 
                } 
             }
-<<<<<<< .mine
             //sys_datacopy(VFS_PROC_NR,senderList,rx_pid,m_in.m7_p1,idx);
 	    sys_datacopy(VFS_PROC_NR,senderList,m_in.m_source,m_in.m7_p1,idx);
-=======
-            //sys_datacopy(VFS_PROC_NR,senderList,rx_pid,m_in.m7_p1,idx);
-            sys_datacopy(VFS_PROC_NR,senderList,m_in.m_source,m_in.m7_p1,idx);
->>>>>>> .r98
             return 0;
         }else{
             printf("ERROR Unauthorized process %d trying to do get_sender\n",rx_pid);
