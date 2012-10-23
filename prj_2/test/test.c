@@ -4,11 +4,12 @@
 int test_suite1(){
    int res, res1, res2, res3, retVal, test_id = 1 ;
    int * mb_list = NULL;
+   int * sender_list = NULL;
    int i = 0;
+   
    printf ( " ---------Test %d: Creating mail box with Self permission--------\n", test_id);
    res = create_mailbox(0x4);
-   
-   if(res == -1){
+      if(res == -1){
 	   printf( "SYSTEM CALL FAIL: Failed to create mail box with self permission \n" );
    }else {
           printf("Success: create mail box with self permission returned  %d ",res);
@@ -50,12 +51,13 @@ int test_suite1(){
 	   printf( "SYSTEM CALL FAIL: get_av_mailboxes FAILED \n" );
    }else {
           printf("Success: get_av_mailboxes retVal =  %d\n", retVal );
-	 for ( i = 0 ; i < 20 ; i = i+2 ) {
-		   printf("mb_ %d _id  = %d \t mb_%d_procID = %d\n", i, *mb_list, i, *(mb_list +1) );
-		   i = i+2; 
-           }
+	 for ( i = 0 ; i < 20 ; i ++ ) {
+		   printf("mb_ %d _id  = %d \t mb_%d_procID = %d\n", i, *(mb_list + (2*i)), i, *(mb_list +(2* i)+1) );
+        }
   
    }
+   free (mb_list);
+   
     
    
    test_id++;
@@ -84,27 +86,63 @@ int test_suite1(){
    
 test_id++;
    printf ( "\n\n------ Test  %d: Register mailbox INVALID case------\n", test_id);
-      res = register_mb(10);
-     if(res == -1){
+      retVal = register_mb(10);
+     if(retVal == -1){
           printf( "Success: Failed to register mail box\n" );
      }else {
 	   printf("FAIL: Register mailbox returned success");
      }
 
    
+   
+   
+test_id++;
+   printf ( "\n\n------ Test  %d: get Senders ------\n", test_id);
+   sender_list = (int * ) malloc (10 *sizeof(int));   
+   retVal = get_senders(res, sender_list);
+   if(retVal == -1){
+	   printf( "FAIL: get Senders  FAILED \n" );
+   }else {
+          printf("Success: get_senders retVal =  %d\n", retVal );
+	 for ( i = 0 ; i < 10 ; i ++) {
+		   printf("mb_%d_procID = %d\n",  i, *(mb_list + i) );
+		    
+           }
+  
+   }
+   free (sender_list);
+   
+   
+   
+   
+test_id++;
+   printf ( "\n\n------ Test  %d: get Senders -INVALID-----\n", test_id);
+   sender_list = (int * ) malloc (10 *sizeof(int));   
+   retVal = get_senders(9, sender_list);
+   if(retVal == -1){
+	   printf( "SUCESS: get Senders  FAILED \n" );
+   }else {
+          printf("FAIL: get_senders retVal =  %d\n", retVal );
+	 for ( i = 0 ; i < 10 ; i ++) {
+		   printf("mb_%d_procID = %d\n",  i, *(mb_list + i) );
+           }
+   }
+   free (sender_list);
+   
+   
      test_id++;
       printf ( "\n\n------Test  %d: Authorized Delete  mail box of Self permission ------\n", test_id);
-      res = destroy_mailbox(res);
-      if(res == -1){
+      retVal = destroy_mailbox(res);
+      if(retVal == -1){
           printf( "SYSTEM CALL FAIL: Failed to delete mail box\n" );
      }else {
-	   printf("Success: delete mail box  returned  %d ",res);
+	   printf("Success: delete mail box  returned  %d ",retVal);
      }   
      
      test_id++;
       printf ( "\n\n------Test  %d: Authorized Delete  mail box of group permission------\n", test_id);
-      res = destroy_mailbox(res1);
-      if(res == -1){
+      retVal = destroy_mailbox(res1);
+      if(retVal == -1){
           printf( "SYSTEM CALL FAIL: Failed to delete mail box\n" );
      }else {
 	   printf("Success: delete mail box  returned  %d ",res);
@@ -112,22 +150,22 @@ test_id++;
    
    test_id++;
     printf ( "\n\n------ Test  %d: Authorized Delete  mail box of Everyone permission------\n", test_id);
-      res = destroy_mailbox(res2);
-      if(res == -1){
+      retVal = destroy_mailbox(res2);
+      if(retVal == -1){
           printf( "SYSTEM CALL FAIL: Failed to delete mail box\n" );
      }else {
-	   printf("Success: delete mail box  returned  %d ",res);
+	   printf("Success: delete mail box  returned  %d \n",retVal);
      }   
    
    
    
    test_id++;
     printf ( "\n\n------ Test  %d: Authorized Delete  mail box of other permission------\n", test_id);
-      res = destroy_mailbox(res3);
-      if(res == -1){
+      retVal = destroy_mailbox(res3);
+      if(retVal == -1){
           printf( "SYSTEM CALL FAIL: Failed to delete mail box\n" );
      }else {
-	   printf("Success: delete mail box  returned  %d ",res);
+	   printf("Success: delete mail box  returned  %d ",retVal);
      }   
      
    
