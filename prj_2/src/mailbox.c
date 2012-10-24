@@ -172,7 +172,7 @@ int unsuspend_rx(struct MailBox *m, struct  Message_mb * mail){
     printf("%c%c%c%c%c \n",mail->data[0],mail->data[1],mail->data[2],mail->data[3],mail->data[4]);
 
     rfp->fp_flags = FP_REVIVED; 
-    sys_datacopy(VFS_PROC_NR,mail->data,m->sus_m_source,m->sus_message.m7_p1,25);
+    sys_datacopy(VFS_PROC_NR,mail->data,m->sus_m_source,m->sus_message.m7_p1,256);
     reply(rfp->fp_endpoint,0); 
 
     return 0;
@@ -316,7 +316,7 @@ PUBLIC int do_deposit()
     tx_uid = m_in.m7_i2;
     tx_gid = m_in.m7_i3;
    sys_datacopy(m_in.m_source,m_in.m7_p2,VFS_PROC_NR,dest, MAX_DEST*sizeof(int));
-   sys_datacopy(m_in.m_source,m_in.m7_p1,VFS_PROC_NR,msg->data,25);
+   sys_datacopy(m_in.m_source,m_in.m7_p1,VFS_PROC_NR,msg->data,256);
    msg->sender_id = tx_pid;
    suspend_sender = 0;
    for(i=0;i< MAX_DEST;i++ ){
@@ -398,7 +398,7 @@ PUBLIC int do_retrieve()
         mbList[mb_id]->rx_suspended = 0 ; 
     }
     //sys_datacopy(VFS_PROC_NR,msg->data,rx_pid,m_in.m7_p1,strlen(msg->data));
-    sys_datacopy(VFS_PROC_NR,msg->data,m_in.m_source,m_in.m7_p1,25);
+    sys_datacopy(VFS_PROC_NR,msg->data,m_in.m_source,m_in.m7_p1,256);
     return 0;
 }
 PUBLIC int do_destroy_mailbox()
