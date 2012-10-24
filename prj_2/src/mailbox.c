@@ -70,6 +70,9 @@ struct MailBox{
     int num_senders;
     int num_messages;
     int rx_suspended;
+    int sus_end_p;
+    int sus_m_source;
+    message sus_message;
 	struct MailNode *front ;
 	struct MailNode *rear ;
 };
@@ -160,6 +163,22 @@ int set_sender_local_id(int sender_pid) {
      }
      return -1;
 }
+int unsuspend_rx(struct MailBox *m, struct  Message_mb * mail){
+    register struct mproc *rmp;
+    struct fproc *rfp;
+    rfp = &fproc[m->sus_end_p];
+    printf("Copying to suspended process \n");
+    printf("The mail data = ");
+    printf("%c%c%c%c%c \n",mail->data[0],mail->data[1],mail->data[2],mail->data[3],mail->data[4]);
+
+    rfp->fp_flags = FP_REVIVED; 
+    sys_datacopy(VFS_PROC_NR,mail->data,m->sus_m_source,m->sus_message.m7_p1,25);
+    reply(rfp->fp_endpoint,0); 
+
+    return 0;
+}
+
+
 int addMailBox(struct MailBox *mb) {
     int mb_id;
     printf ("Entered addMailbox function\n");
@@ -199,11 +218,19 @@ int create_mailbox(int owner_pid,int owner_uid,int owner_gid,int permissions)
 }
 int putMsg(struct MailBox *m, struct  Message_mb * mail)
 {
+   int ret;
     struct MailNode *new_node ;
+    printf("put message called with maildata \n");
     if(m->num_messages >= MB_CAPACITY) {
         printf("Mailbox Full\n");
         return -1;
+    }else if(m->rx_suspended == 1){
+        printf("Calling unsuspend \n");
+        m->rx_suspended == 0;
+        ret=unsuspend_rx(m,mail);
+        return ret;
     }
+    printf("Running other code \n");
     new_node = (struct MailNode *)(malloc(sizeof(struct MailNode)));
     new_node->next = NULL ;
 	new_node->msg = mail;
@@ -284,12 +311,12 @@ PUBLIC int do_deposit()
    msg = (struct Message_mb *) malloc(sizeof(struct Message_mb));
    my_pid = getpid();
    printf("Do deposit called Pid = %d my_pid = %d \n",m_in.m7_i1,my_pid);
-   lprint("Do deposit called lp\n");
+  // lprint("Do deposit called lp\n");
     tx_pid = m_in.m7_i1;
     tx_uid = m_in.m7_i2;
     tx_gid = m_in.m7_i3;
-   sys_datacopy(tx_pid,m_in.m7_p2,VFS_PROC_NR,dest, MAX_DEST*sizeof(int));
-   sys_datacopy(tx_pid,m_in.m7_p1,VFS_PROC_NR,msg->data,256);
+   sys_datacopy(m_in.m_source,m_in.m7_p2,VFS_PROC_NR,dest, MAX_DEST*sizeof(int));
+   sys_datacopy(m_in.m_source,m_in.m7_p1,VFS_PROC_NR,msg->data,25);
    msg->sender_id = tx_pid;
    suspend_sender = 0;
    for(i=0;i< MAX_DEST;i++ ){
@@ -300,6 +327,7 @@ PUBLIC int do_deposit()
                 break;
            }else{
                 // Send message to this guy
+               printf("Sending message to %d \n",dest[i]);
                dest_id =  get_mb_id(dest[i]);
                if(dest_id >= 0 ) {
                     // Check authorization
@@ -316,7 +344,7 @@ PUBLIC int do_deposit()
                       }
                     }
                }else {
-		       printf ( " Invalid Destination ID\n");
+		           printf ( " Invalid Destination ID\n");
 	       }
            }
        }else{
@@ -352,6 +380,7 @@ PUBLIC int do_retrieve()
     msg = (struct Message_mb *) malloc(sizeof(struct Message_mb));
     rx_pid = m_in.m7_i1;
     mb_id = get_mb_id(rx_pid);
+    printf("Trying receiver from mb_id = %d \n",mb_id);
     if(mb_id < 0) {
         printf("Invalid user may not have created Mailbox\n");
         return -1;
@@ -361,9 +390,15 @@ PUBLIC int do_retrieve()
         printf("MailBox Empty \n");
         // The process should be suspended
         mbList[mb_id]->rx_suspended = 1 ;
+        mbList[mb_id]->sus_end_p = who_p;
+        mbList[mb_id]->sus_m_source = m_in.m_source ;
+        mbList[mb_id]->sus_message.m7_p1 = m_in.m7_p1;
+        return (SUSPEND);
+    }else{
+        mbList[mb_id]->rx_suspended = 0 ; 
     }
     //sys_datacopy(VFS_PROC_NR,msg->data,rx_pid,m_in.m7_p1,strlen(msg->data));
-    sys_datacopy(VFS_PROC_NR,msg->data,m_in.m_source,m_in.m7_p1,strlen(msg->data));
+    sys_datacopy(VFS_PROC_NR,msg->data,m_in.m_source,m_in.m7_p1,25);
     return 0;
 }
 PUBLIC int do_destroy_mailbox()
@@ -405,6 +440,9 @@ PUBLIC int do_create_mailbox()
        initialize = 50 ;
        mbList = (struct MailBox **) malloc(MAX_MAILBOXES*sizeof(struct MailBox * ));
        susContext=(struct SuspendContext **) malloc(MAX_MAILBOXES * MAX_SENDERS * sizeof(struct SuspendContext *));
+      for(i=0;i<MAX_MAILBOXES ; i++) {
+         mbList[i] = NULL;
+      }
       for(i=0;i<MAX_MAILBOXES * MAX_SENDERS ; i++) {
           susContext[i] = NULL;
       }
@@ -422,7 +460,11 @@ PUBLIC int do_get_av_mailboxes()
     int mb_idx;
     int tx_uid;
     int tx_gid;
-    mailingList = (int * ) malloc (num_active_mailboxes*2*sizeof(int));
+    //mailingList = (int * ) malloc (num_active_mailboxes*2*sizeof(int));
+    mailingList = (int * ) malloc (MAX_MAILBOXES *2*sizeof(int));
+    for(i=0;i<MAX_MAILBOXES*2;i++) { 
+        mailingList[i] = -1 ; 
+    }
     tx_pid = m_in.m7_i1;
     tx_uid = m_in.m7_i2;
     tx_gid = m_in.m7_i3;
