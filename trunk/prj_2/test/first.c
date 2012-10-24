@@ -7,7 +7,8 @@ char  msg[256];
 int res;
 //msg = "Hello";
 strcpy(msg,"Hello");
-res = deposit(&dest,&msg);
+//res = deposit(&dest,&msg);
+res = create_mailbox(0x4);
 printf("Returned %d ",res);
 
 return 0;
