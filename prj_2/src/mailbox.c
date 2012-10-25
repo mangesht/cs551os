@@ -54,8 +54,10 @@ struct SuspendContext{
     struct Message_mb *msg;
     int *suspened_for;
     int len_sus_for;
+    int sus_end_p;
+    int sus_m_source;
+    message sus_message;
 };
-
 
 // Data structures
 struct MailBox{
@@ -100,6 +102,22 @@ void lprint(char * format, ...)
 
 }
 // Helper functions
+
+int check_dead_lock(int local_id){
+    int cursor = local_id ;
+    while(susContext[cursor]!= NULL) { 
+        if(susContext[cursor]->suspened_for[0] == local_id) { 
+            // This is dead lock
+            return 1;
+        }else{
+            cursor = susContext[cursor]->suspened_for[0]; 
+        } 
+    }    
+    return 0;
+}
+
+
+
 int get_free_id() {
    int i;
    for(i=0;i<MAX_MAILBOXES;i++) {
@@ -367,16 +385,28 @@ PUBLIC int do_deposit()
       // Update suspended list
       struct SuspendContext * cntx;
       int this_local_id;
+      int dead_lock;
       printf("suspending sender \n");
       this_local_id = get_sender_local_id(tx_pid);
       cntx = (struct SuspendContext *) malloc(sizeof(struct SuspendContext));
+      cntx->sus_end_p = who_p;
+      cntx->sus_m_source = m_in.m_source ; 
+      cntx->sus_message.m7_p1 = m_in.m7_p1;
       cntx->msg = msg ;
       cntx->suspened_for = (int *) malloc(sizeof(int) * suspend_sender);
       for(i=0;i<suspend_sender;i++) {
-        cntx->suspened_for[i] = sus_dests[i];
+        cntx->suspened_for[i] = get_sender_local_id (sus_dests[i]);
       }
       cntx->len_sus_for = suspend_sender;
       susContext[this_local_id] = cntx;
+      // Check for deadlock
+      dead_lock = check_dead_lock(this_local_id);
+      if(dead_lock == 1 ) { 
+          printf("Deadlock detected \n");
+      } else { 
+          printf("No deadlock detected hece suspending\n");
+          return (SUSPEND);
+      }
    } else {
       printf("do_deposit: ended \n");
       return 0;
