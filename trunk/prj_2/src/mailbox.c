@@ -221,6 +221,7 @@ int putMsg(struct MailBox *m, struct  Message_mb * mail)
    int ret;
     struct MailNode *new_node ;
     printf("put message called with maildata \n");
+    // Put the message in rear of list
     if(m->num_messages >= MB_CAPACITY) {
         printf("Mailbox Full\n");
         return -1;
@@ -236,13 +237,17 @@ int putMsg(struct MailBox *m, struct  Message_mb * mail)
 	new_node->msg = mail;
     if(m->front == NULL)
     {    
+       printf("Empty box \n");
 		m->front = (struct MailNode *)new_node;
 		m->rear  = (struct MailNode *)new_node;
     }
     else
     {
-       new_node->next =(struct  MailNode *)m->rear;
-	   m->rear = (struct MailNode *)new_node;
+      printf("Adding in big queue \n");
+      // new_node->next =(struct  MailNode *)m->rear;
+	   //m->rear->next = (struct MailNode *)new_node;
+	   m->rear->next = new_node;
+       m->rear = new_node ;
     }
     m->num_messages++;
     return 0;
@@ -251,34 +256,39 @@ int putMsg(struct MailBox *m, struct  Message_mb * mail)
 int getMsg(struct MailBox *mb,struct Message_mb *msg)
 {
 	struct  MailNode *prev=NULL;
-    struct  MailNode *cur= (struct  MailNode *)mb->rear;
+    struct  MailNode *cur= (struct  MailNode *)mb->front;
 //	struct  Message msg;
     int debug_en = 1 ;
-
+    // Get the message from front
+    printf("getMsg: Getting the message \n");
 	if (mb->front == NULL) {
    	    if(debug_en) printf("\nCannot Delete. Queue is empty \n");		
         return -1;
   	} else if (cur->next==NULL) {
-		msg = cur->msg;
-		free(mb->front);
+        printf("There is only one element in Queue \n");
+        strcpy(msg->data,cur->msg->data);
+		//msg = cur->msg;
+		//free(mb->front);
 		mb->front=NULL;
 		mb->rear=NULL;
 	}else{
-		while(cur!=(struct  MailNode *)mb->front && cur->next !=NULL){
-			prev = cur;
-			cur = cur->next;
-			if(debug_en) printf("%s -> " , prev->msg->data);
-		}
-		msg =cur->msg;
-		free(mb->front);
-		prev->next=NULL;
-		mb->front=( struct  MailNode *)prev;
+	//	while(cur!=(struct  MailNode *)mb->front && cur->next !=NULL){
+	//		prev = cur;
+	//		cur = cur->next;
+	//		if(debug_en) printf("%s -> " , prev->msg->data);
+	//	}
+        printf("GetMsg: getting from big queue \n");
+	//	msg =cur->msg;
+        strcpy(msg->data,cur->msg->data);
+        printf("%c%c%c%c%c \n",msg->data[0],msg->data[1],msg->data[2],msg->data[3],msg->data[4]);
+        mb->front = cur->next; 
+	  //	free(mb->front);
+	//	prev->next=NULL;
+	//	mb->front=( struct  MailNode *)prev;
 	}
     mb->num_messages--; 
 	return 0;
 }
-
-
 
 
 int isValidSender(int dest_id,int sender_pid) {
@@ -357,6 +367,7 @@ PUBLIC int do_deposit()
       // Update suspended list
       struct SuspendContext * cntx;
       int this_local_id;
+      printf("suspending sender \n");
       this_local_id = get_sender_local_id(tx_pid);
       cntx = (struct SuspendContext *) malloc(sizeof(struct SuspendContext));
       cntx->msg = msg ;
@@ -367,6 +378,7 @@ PUBLIC int do_deposit()
       cntx->len_sus_for = suspend_sender;
       susContext[this_local_id] = cntx;
    } else {
+      printf("do_deposit: ended \n");
       return 0;
    }
 }
@@ -398,6 +410,9 @@ PUBLIC int do_retrieve()
         mbList[mb_id]->rx_suspended = 0 ; 
     }
     //sys_datacopy(VFS_PROC_NR,msg->data,rx_pid,m_in.m7_p1,strlen(msg->data));
+    printf("do_retrieve: returing data\n");
+    printf("%c%c%c%c%c \n",msg->data[0],msg->data[1],msg->data[2],msg->data[3],msg->data[4]);
+
     sys_datacopy(VFS_PROC_NR,msg->data,m_in.m_source,m_in.m7_p1,256);
     return 0;
 }
