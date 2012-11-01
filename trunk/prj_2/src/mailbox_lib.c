@@ -35,14 +35,22 @@ PUBLIC int get_senders(int mb_id, int *sender_list);
 
 PUBLIC int deposit(int *dst, char *msg){
     message mes;
+    int retVal ;
  //   mes.m7i2 = getuid();
  //   mes.m7i3 = getgid();
     mes.m7_i1 = getpid();
 //    mes.m_type = 7 ;
     mes.m7_p1 = msg; 
     mes.m7_p2 = dst;
-    printf("Process %d sending message = %s to ",mes.m7_i1,msg);
-    return ( (int) _syscall(VFS_PROC_NR,DEPOSIT,&mes));
+   // printf("Process %d sending message = %s to ",mes.m7_i1,msg);
+    retVal = ( (int) _syscall(VFS_PROC_NR,DEPOSIT,&mes));
+    if(retVal == 0 ) {
+        if(dst[0] < 0) {
+            return dst[0];
+        }else{
+           return((int) retVal);
+        }
+    }
   // For referece  return( (uid_t) _syscall(VFS_PROC_NR, GETUID, &m));
 }
 PUBLIC int retrieve(int source , char *msg) 
