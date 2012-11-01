@@ -105,30 +105,48 @@ void lprint(char * format, ...)
 int indicate_deadlock(int local_id){
     struct fproc *rfp;
     int cursor = local_id ;
+    int *fRet;
     printf("Indicate_deadlock Checking deadlock for local_id = %d \n",local_id); 
+    fRet = (int *) malloc(sizeof(int) * 4);
+    fRet[0] = -2;
+    fRet[1] = -2;
+    fRet[2] = -2;
     while(susContext[cursor]!= NULL) { 
         printf("cursor = %d susContext[cursor].suspendedFor = %d \n",cursor,susContext[cursor]->suspened_for[0]);  
         if(susContext[cursor]->suspened_for[0] == local_id) { 
+            printf("Reviving %d \n",cursor);
             // This is dead lock
             susContext[cursor]->suspened_for[0] = -1;
             printf("Process %d is being dead unblocked\n",cursor);
             rfp = &fproc[susContext[cursor]->sus_end_p];
-            reply(rfp->fp_endpoint,-2); 
+
+            //susContext[cursor]->sus_message.m7_i4 = -2; //T1
+            //rfp->fp_flags = FP_REVIVED; 
+            sys_datacopy(VFS_PROC_NR,fRet,susContext[cursor]->sus_m_source,susContext[cursor]->sus_message.m7_p2,2*sizeof(int));
+            reply(rfp->fp_endpoint,0); 
             return 1;
         }else{
             if(cursor != local_id) { 
+                int susp_for_temp;
                 printf("Process %d is being dead unblocked\n",cursor);
-                susContext[cursor]->suspened_for[0] = -1;
                 rfp = &fproc[susContext[cursor]->sus_end_p];
-                reply(rfp->fp_endpoint,-2); 
+                //susContext[cursor]->sus_message.m7_i4 = -2; //T1
+                sys_datacopy(VFS_PROC_NR,fRet,susContext[cursor]->sus_m_source,susContext[cursor]->sus_message.m7_p2,4*sizeof(int));
+                //rfp->fp_flags = FP_REVIVED; 
+                reply(rfp->fp_endpoint,0); 
+                susp_for_temp= susContext[cursor]->suspened_for[0] ;
+                susContext[cursor]->suspened_for[0] = -1 ;
+                cursor = susp_for_temp ;  
+            }else{
+                // This process is just caused deadlock, sender is still there, no need to fetch context and unblock it
             }
             
-            struct SuspendContext * temp;
-            temp = susContext[cursor];
-            susContext[cursor] = NULL; 
-            //cursor = susContext[cursor]->suspened_for[0]; 
-            cursor = temp->suspened_for[0]; 
-            free(temp);
+            //struct SuspendContext * temp;
+           // temp = susContext[cursor];
+           // susContext[cursor] = NULL; 
+            cursor = susContext[cursor]->suspened_for[0]; 
+            //cursor = temp->suspened_for[0]; 
+            //free(temp);
             
         } 
     }    
@@ -144,6 +162,9 @@ int check_dead_lock(int local_id){
         if(susContext[cursor]->suspened_for[0] == local_id) { 
             // This is dead lock
             return 1;
+        }if(susContext[cursor]->suspened_for[0] == -1) {
+           // No dead lock 
+           return 0;
         }else{
             cursor = susContext[cursor]->suspened_for[0]; 
         } 
@@ -348,6 +369,10 @@ int getMsg(struct MailBox *mb,struct Message_mb *msg)
 
 int isValidSender(int dest_id,int sender_pid) {
    int i;
+    if(mbList[dest_id]->owner_pid == -1) {
+        printf("Destination does not exist. its removed\n");
+        return -1;
+    } 
     for(i=0;i<mbList[dest_id]->num_senders;i++){
          if(mbList[dest_id]->senders[i] == sender_pid) {
             return 1;
@@ -371,7 +396,10 @@ PUBLIC int do_deposit()
    int dest_id;
    int sus_dests[MAX_SENDERS];
    int suspend_sender;
+   int is_valid_sender;
    struct Message_mb *msg;
+   int *fRet;
+   fRet = (int *) malloc(sizeof(int) * 4);
    dest = (int *) malloc(MAX_DEST * sizeof(int) );
    msg = (struct Message_mb *) malloc(sizeof(struct Message_mb));
    my_pid = getpid();
@@ -386,9 +414,10 @@ PUBLIC int do_deposit()
    suspend_sender = 0;
    for(i=0;i< MAX_DEST;i++ ){
        int put_msg_ret_val;
+       is_valid_sender = 0;
        if(dest[i] != NULL) {
            if( dest[i] < 0 ) {
-                printf("Sender trying to send to %d \n",dest[i]);
+                printf("Sender stream terminated : to %d \n",dest[i]);
                 break;
            }else{
                 // Send message to this guy
@@ -396,7 +425,8 @@ PUBLIC int do_deposit()
                dest_id =  get_mb_id(dest[i]);
                if(dest_id >= 0 ) {
                     // Check authorization
-                    if(isValidSender(dest_id,tx_pid)){
+                    is_valid_sender = isValidSender(dest_id,tx_pid); 
+                    if(is_valid_sender == 1 ){
                     // Send message only when destination seems valid
                         put_msg_ret_val= putMsg(mbList[dest_id], msg);
                         if(put_msg_ret_val == -1) {
@@ -407,6 +437,12 @@ PUBLIC int do_deposit()
                             sus_dests[suspend_sender] = dest_id;
                             suspend_sender++;
                       }
+                    }else{
+                        if(is_valid_sender == -1 ) { 
+                            return -4;
+                         }else{
+                            return -5;
+                         }
                     }
                }else {
 		           printf ( " Invalid Destination ID\n");
@@ -426,10 +462,20 @@ PUBLIC int do_deposit()
       int dead_lock;
       printf("suspending sender \n");
       this_local_id = get_sender_local_id(tx_pid);
-      cntx = (struct SuspendContext *) malloc(sizeof(struct SuspendContext));
+      if(susContext[this_local_id] == NULL) {  
+           printf("susContext NULL hence allocating for local id = %d \n",this_local_id);
+           cntx = (struct SuspendContext *) malloc(sizeof(struct SuspendContext));
+           susContext[this_local_id] = cntx;
+           
+      }else{
+           printf("susContext NOT  NULL hence NOT allocating for local id = %d \n",this_local_id);
+      }
+      cntx = susContext[this_local_id];
       cntx->sus_end_p = who_p;
+      //cntx->sus_message= m_in;
       cntx->sus_m_source = m_in.m_source ; 
       cntx->sus_message.m7_p1 = m_in.m7_p1;
+      cntx->sus_message.m7_p2 = m_in.m7_p2;
       cntx->msg = msg ;
       cntx->suspened_for = (int *) malloc(sizeof(int) * suspend_sender);
       for(i=0;i<suspend_sender;i++) {
@@ -438,13 +484,18 @@ PUBLIC int do_deposit()
         cntx->suspened_for[i] = sus_dests[i];
       }
       cntx->len_sus_for = suspend_sender;
-      susContext[this_local_id] = cntx;
+     // susContext[this_local_id] = cntx;
       // Check for deadlock
       dead_lock = check_dead_lock(this_local_id);
       if(dead_lock == 1 ) { 
+          fRet[0] = -2;
+          fRet[1] = -2;
+          fRet[2] = -2;
           printf("Deadlock detected \n");
           indicate_deadlock(this_local_id);
-          return -2;
+          
+          sys_datacopy(VFS_PROC_NR,fRet,m_in.m_source,m_in.m7_p2,2*sizeof(int));
+          return 0;
       } else { 
           printf("No deadlock detected hece suspending\n");
           return (SUSPEND);
@@ -500,10 +551,15 @@ PUBLIC int do_destroy_mailbox()
         //if(mbList[del_mb_id]->owner_pid == rx_pid) {
         if(1) { // Temporary fix for time being 
             // You are authorized to delete
-           temp_mb = mbList[del_mb_id];
+          // temp_mb = mbList[del_mb_id];
            mbList[del_mb_id]->owner_pid = -1;
-           mbList[del_mb_id] = NULL;
-           free(temp_mb);
+           mbList[del_mb_id]->mb_id = -1;
+           mbList[del_mb_id]->num_senders = 0;
+           mbList[del_mb_id]->num_messages = 0;
+           mbList[del_mb_id]->front = NULL;
+           mbList[del_mb_id]->rear = NULL;
+           //mbList[del_mb_id] = NULL;
+           //free(temp_mb);
            ret_val = set_free_id(del_mb_id);
         }else {
             printf("ERROR Unauthorized process = %d trying to delete Mb", rx_pid);
