@@ -1,0 +1,19 @@
+.\" Man page for Destroy Mailbox System Call.
+.TH man 1 "25 Oct 2012" "1.0" "Destroy Mailbox man page"
+.SH NAME
+Destroy Mailbox system call.
+.SH DESCRIPTION
+Destroys a mailbox associated with a process.
+.SH PROTOTYPE
+int do_destroy_mailbox(void)
+.SH LIBRARY FUNC
+int destroy_mailbox(int id) 
+.SH INPUT
+Mailbox id to be destroyed.
+.SH RETURNS
+Success :  0
+Failure : -1
+.SH BLOCKING
+No
+.SH EXCEPTION
+Mailbox not available, Process does not have privilege to destroy mailbox

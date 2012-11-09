@@ -1,0 +1,19 @@
+.\" Man page for Retrieve System Call.
+.TH man 1 "25 Oct 2012" "1.0" "Retrieve man page"
+.SH NAME
+Retreive system call.
+.SH DESCRIPTION
+Retreives a message to the mailbox. Receives messages from different senders in the same order as the messages were posted. Receiver process will receive the mails in the same order as it reached the mail box.  
+.SH PROTOTYPE
+int do_retrieve(void)
+.SH LIBRARY FUNC
+int retrieve(int source , char *msg) 
+.SH INPUT
+Mailbox id and pointer to a message variable.
+.SH RETURNS
+Success :  0
+Failure : -1
+.SH BLOCKING
+Yes
+.SH EXCEPTION
+Unable to access the mailbox, mailbox having mail not belonging to the mailbox owner, mail sent by a process that does not have security access to the mailbox
