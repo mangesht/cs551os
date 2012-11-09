@@ -55,19 +55,26 @@ int main(){
        }
        sleep(1);
    }
-   printf("Enter the Id of mailbox to register to ");
-   scanf("%d",&rx_mb_id); 
-   retVal = get_av_mailboxes(mb_list);
-   for ( i = 0 ; i < 20 ; i ++ ) {
-        if(mb_list[2*i] == rx_mb_id) { 
-            destin[0] = mb_list[2*i+1];
-            d_copy[0] = destin[0];
-            break;
-        }
-   }
-   
-//   res = mb_list[0];
-   printf ( "\n\n------ Test  %d: Register mailbox VALID case------\n", test_id);
+   int hmany_rx;
+   int j;
+   printf("Send to how many receivers ");
+   scanf("%d",&hmany_rx);
+   // Get their mailbox ids 
+   for(j=0;j<hmany_rx;j++) { 
+       printf("Enter the Id of mailbox to register to ");
+       scanf("%d",&rx_mb_id); 
+       retVal = get_av_mailboxes(mb_list);
+       for ( i = 0 ; i < 20 ; i ++ ) {
+           if(mb_list[2*i] == rx_mb_id) { 
+               destin[j] = mb_list[2*i+1];
+               d_copy[j] = destin[j];
+              
+               destin[j+1] = -1;
+               d_copy[j+1] = -1;
+               break;
+           }
+       }
+      printf ( "\n\n------ Test  %d: Register mailbox VALID case------\n", test_id);
       printf("Registering to mailbox id = %d \n",rx_mb_id);
       retVal = register_mb(rx_mb_id);
       if(retVal == -1){
@@ -77,71 +84,35 @@ int main(){
      }else if(retVal == -2){
 	   printf("Success: Sender already Registered \n");
      }
-     
-    printf("Deposting now \n");
+ 
+   }
+   
+//   res = mb_list[0];
+    
     //destin[0] = mb_list[1];
-    destin[1] = -1;
-    d_copy[1] = -1;
     msg = (char * ) malloc(256);
     bmsg = (char * ) malloc(256);
     msg_rx = (char * ) malloc(256);
     strcpy(msg,"Hellow World"); 
     int nTimes;
+    int sc;
+    int MAX = 5;
     
-    for(nTimes=0;nTimes<15;nTimes++){ 
-        printf("\nEnter any int to send message");
-        scanf("%d",&c);
+    for(nTimes=0;nTimes<MAX;nTimes++){ 
         //sleep(1);
-        for(i=0;1 ; i++) { 
+        printf("\nSending to ");
+        for(i=0;10 ; i++) { 
              destin[i] = d_copy[i];
              if(d_copy[i] == -1 ) break;
+             printf("%d ", destin[i]);
         }
+        printf("\n");
         sprintf(msg,"Hellow World %d from %d",nTimes,mb_id);
         retVal = deposit(destin,msg);
         printf("Deposit returned = %d destin = %d \n",retVal,destin[0]);
-        if(retVal == -2) { 
-             printf("deadlock detected \n");
-             // Start receving messages 
-             printf("Start getting messages ? Enter 1 \n");
-             scanf("%d",&c);
-             for(i=0;i<10;i++) {
-                 res1 = retrieve(1,msg_rx); 
-                 if(res1 == -1 ) { 
-                      printf("Retrieve failed returned %d \n",res1);
-                  }else{
-                      printf("Retrieve success returned %d \n",res1);
-                      printf("%s",msg_rx);
-                      printf("\n");
-                 }
-             }
-             break;
 
-          } else if(retVal == -1) {
-             printf("Deposit failed rx not available\n");
-          } 
       }
-     for(nTimes=0;nTimes<5;nTimes++){ 
-        printf("\nEnter any char to send message");
-        scanf("%d",&c);
-        //sleep(1);
-        for(i=0;1 ; i++) { 
-             destin[i] = d_copy[i];
-             if(d_copy[i] == -1 ) break;
-        }
-
-        retVal = deposit(destin,msg);
-        printf("Deposit returned = %d destin = %d \n",retVal,destin[0]);
-        if(retVal < 0) { 
-             printf("Invalid mailbox \n");
-             // Start receving messages 
-             break;
-
-          } else if(retVal == -1) {
-             printf("Deposit failed rx not available\n");
-          } 
-      }
-      
-      retVal = destroy_mailbox(res);
+      retVal = destroy_mailbox(mb_id);
       if(retVal == -1){
           printf( "SYSTEM CALL FAIL: Failed to delete mail box\n" );
      }else {
