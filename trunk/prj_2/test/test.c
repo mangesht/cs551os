@@ -97,7 +97,7 @@ int tc_createMailbox(){
    }
    destroy_mailbox(mb_id);
    
-   return ; 
+   return 1; 
 }
 
 
@@ -136,7 +136,7 @@ int tc_createMultipleMailbox(){
    destroy_mailbox(mb_id2);
    destroy_mailbox(mb_id3);
         
-   return ; 
+   return 1; 
 }
 
 
@@ -289,7 +289,7 @@ int tc_deposit(){
    int res, retVal, mb_id ;
    int * mb_list = NULL;
    int m_pid[12] = {-1};
-   char* msg;
+   char* msg1;
     int *destin;
    int i = 0, j = 0;
     int arr[24] = { -1};
@@ -330,9 +330,9 @@ int tc_deposit(){
     destin = (int *) malloc(40*sizeof(int));
     destin[0] = mb_list[1];
     destin[1] = -1;
-    msg = (char * ) malloc(256);
-    strcpy(msg,"Hello world\n");
-    retVal = deposit(destin,msg);
+    msg1 = (char * ) malloc(256);
+    strcpy(msg1,"Hello world ");
+    retVal = deposit(destin,msg1);
     //free (destin);
     //free (mb_list);
    return 0;
@@ -343,7 +343,7 @@ int tc_deposit(){
 int tc_Receive_mail(){
 
    int res1, retVal ;
-   char * msg;
+   char* rx_msg;
    int m_id;
    
    printf ( " ---------Creating Mailbox ------\n");
@@ -355,21 +355,21 @@ int tc_Receive_mail(){
           printf("Success: Mail box  Created: ID = %d\n ",m_id);
    }
    
-  msg = (char * ) malloc(256);
+  rx_msg = (char *) malloc(256);
   
   printf("Retrieving message from the mailbox\n");
   
   //while ( 1 ) {
-  memset ( msg, '#', 256);
-  res1 = retrieve(1,msg);
+  memset ( rx_msg, '#', 255);
+  res1 = retrieve(1,rx_msg);
   if(res1 == -1 ) {
       printf("Retrieve failed returned %d \n",res1);
   }else{
-      printf("Retrieve success : Msg Received is : \n");
-      while ( *msg != '#'){
-        printf("%c",*msg);
-	msg++;
-      }
+      printf("Retrieve success : Msg Received is : %s\n",rx_msg);
+     //   while ( *rx_msg != '#'){
+     //   printf("%c",*rx_msg);
+   	//    rx_msg++;
+    //  }
      printf(" \n");
      printf ( "DONE\n");
        }
@@ -745,7 +745,7 @@ int tc_err_deposit_msg_invalid_dest_id()
     destin[0] = 11;
     destin[1] = -1;
     msg = (char * ) malloc(256);
-    strcpy(msg,"Hello World");
+    strcpy(msg,"Hello_World");
     retVal = deposit(destin,msg);
     if ( retVal == 0 ) {
        printf ("\nInvalid Destination ID, Failed to send\n");

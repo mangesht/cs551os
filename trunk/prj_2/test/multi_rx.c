@@ -78,7 +78,6 @@ int main(){
 	   printf("Success: Sender already Registered \n");
      }
      
-    printf("Deposting now \n");
     //destin[0] = mb_list[1];
     destin[1] = -1;
     d_copy[1] = -1;
@@ -87,61 +86,22 @@ int main(){
     msg_rx = (char * ) malloc(256);
     strcpy(msg,"Hellow World"); 
     int nTimes;
+    int sc;
+    int MAX = 5;
     
-    for(nTimes=0;nTimes<15;nTimes++){ 
-        printf("\nEnter any int to send message");
-        scanf("%d",&c);
+    for(nTimes=0;nTimes<MAX;nTimes++){ 
         //sleep(1);
-        for(i=0;1 ; i++) { 
-             destin[i] = d_copy[i];
-             if(d_copy[i] == -1 ) break;
-        }
-        sprintf(msg,"Hellow World %d from %d",nTimes,mb_id);
-        retVal = deposit(destin,msg);
-        printf("Deposit returned = %d destin = %d \n",retVal,destin[0]);
-        if(retVal == -2) { 
-             printf("deadlock detected \n");
-             // Start receving messages 
-             printf("Start getting messages ? Enter 1 \n");
-             scanf("%d",&c);
-             for(i=0;i<10;i++) {
-                 res1 = retrieve(1,msg_rx); 
-                 if(res1 == -1 ) { 
-                      printf("Retrieve failed returned %d \n",res1);
-                  }else{
-                      printf("Retrieve success returned %d \n",res1);
-                      printf("%s",msg_rx);
-                      printf("\n");
-                 }
-             }
-             break;
-
-          } else if(retVal == -1) {
-             printf("Deposit failed rx not available\n");
-          } 
+        // retrieve here  
+            res1 = retrieve(1,msg_rx); 
+            if(res1 == -1 ) { 
+                 printf("Retrieve failed returned %d \n",res1);
+            }else{
+                 printf("Retrieve success returned %d \n",res1);
+                 printf("%s",msg_rx);
+                 printf("\n");
+            }
       }
-     for(nTimes=0;nTimes<5;nTimes++){ 
-        printf("\nEnter any char to send message");
-        scanf("%d",&c);
-        //sleep(1);
-        for(i=0;1 ; i++) { 
-             destin[i] = d_copy[i];
-             if(d_copy[i] == -1 ) break;
-        }
-
-        retVal = deposit(destin,msg);
-        printf("Deposit returned = %d destin = %d \n",retVal,destin[0]);
-        if(retVal < 0) { 
-             printf("Invalid mailbox \n");
-             // Start receving messages 
-             break;
-
-          } else if(retVal == -1) {
-             printf("Deposit failed rx not available\n");
-          } 
-      }
-      
-      retVal = destroy_mailbox(res);
+      retVal = destroy_mailbox(mb_id);
       if(retVal == -1){
           printf( "SYSTEM CALL FAIL: Failed to delete mail box\n" );
      }else {

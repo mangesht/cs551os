@@ -41,6 +41,11 @@ int main(){
     destin[1] = -1;
     msg = (char * ) malloc(256);
     strcpy(msg,"Hellow World"); 
-    retVal = deposit(destin,msg);
+    int nTimes;
+    for(nTimes=0;nTimes<1;nTimes++){ 
+        printf("\nEnter message to send ");
+        scanf("%s",msg);
+        retVal = deposit(destin,msg);
+    }
    return 0;
 }
