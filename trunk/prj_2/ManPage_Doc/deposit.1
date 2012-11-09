@@ -1,0 +1,22 @@
+.\" Man page for Deposit System Call.
+.TH man 1 "25 Oct 2012" "1.0" "Deposit man page"
+.SH NAME
+Deposit system call.
+.SH DESCRIPTION
+Deposits a message to the mailbox. Deposit system call supports multiple receivers for a message. 
+Deposit call blocks if mailbox is full. A sending process must register to a mailbox before it can send a message. 
+.SH PROTOTYPE
+int do_deposit(void)
+.SH LIBRARY FUNC
+int deposit(int *dst, char *msg)
+.SH INPUT
+Message m7 of minix packed with message data and destination process id.
+.SH RETURNS
+Success :  0
+Failure : -1
+.SH BLOCKING
+Yes
+.SH EXCEPTION
+Mailbox maynot exist, Mailbox is full, Invalid destination,
+Process does not have permission to deposit
+

@@ -1,0 +1,18 @@
+.\" Man page for Create Mailbox System Call.
+.TH man 1 "25 Oct 2012" "1.0" "Create Mailbox man page"
+.SH NAME
+Create Mailbox system call.
+.SH DESCRIPTION
+Creates a new mailbox for a process. Mailbox is maintained as a Queue. Mails (messages) can be added to a queue so long it has empty slots. Max mail messages that a queue can hold is preconfigured. Once a mailbox is full any process that sends messages to the mailbox is blocked.
+.SH PROTOTYPE
+int do_create_mailbox(void)
+.SH LIBRARY FUNC
+int create_mailbox(int permissions)
+.SH INPUT
+Access levels as permissions (everyone, group and self)
+.SH RETURNS
+Mailbox id
+.SH BLOCKING
+No
+.SH EXCEPTION
+Mailbox already available, not enough memory to create mailbox

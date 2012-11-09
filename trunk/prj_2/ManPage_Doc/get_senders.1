@@ -1,0 +1,19 @@
+.\" Man page for Get Senders System Call.
+.TH man 1 "25 Oct 2012" "1.0" "Get Senders man page"
+.SH NAME
+Get Senders system call.
+.SH DESCRIPTION
+Returns the list of sender processes associated with a mailbox. 
+.SH PROTOTYPE
+int do_get_senders(void )
+.SH LIBRARY FUNC
+int register_mb(int mb_id)
+.SH INPUT
+Mailbox Id
+.SH RETURNS
+Success :  0
+Failure : -1
+.SH BLOCKING
+No
+.SH EXCEPTION
+Invalid mailbox id

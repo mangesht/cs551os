@@ -1,0 +1,17 @@
+.\" Man page for Get available Mailbox System Call.
+.TH man 1 "25 Oct 2012" "1.0" "Get Available Mailbox man page"
+.SH NAME
+get_av_mailboxes system call.
+.SH DESCRIPTION
+Retrieves a list of the available mailboxes attached to a process.
+.SH PROTOTYPE
+Int do_get_av_mailboxes()
+.SH LIBRARY FUNC
+int get_av_mailboxes(int *mb_list)
+.SH INPUT
+An integer pointer to a list of mailbox and process mapping 
+.SH RETURNS
+Success :  0
+Failure : -1
+.SH BLOCKING
+No

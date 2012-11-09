@@ -1,0 +1,20 @@
+.\" Man page for Register System Call.
+.TH man 1 "25 Oct 2012" "1.0" "Register man page"
+.SH NAME
+Register system call.
+.SH DESCRIPTION
+Registers a process to a mailbox to facilitate sending of messages to the process. A sending process must register to a mailbox before it can send a message. 
+.SH PROTOTYPE
+int do_register(void)
+.SH LIBRARY FUNC
+int register_mb(int mb_id)
+.SH INPUT
+Mailbox Id
+.SH RETURNS
+Error                      :   -1
+Sender already registered  :   -2
+Successful registration    :    0
+.SH BLOCKING
+No
+.SH EXCEPTION
+Process already registered, Process does not have access to mailbox, Invalid mailbox id.
