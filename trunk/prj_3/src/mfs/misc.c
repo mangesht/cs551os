@@ -1,5 +1,6 @@
 #include "fs.h"
 #include <assert.h>
+#include <math.h>
 #include <minix/vfsif.h>
 #include <minix/bdev.h>
 #include "inode.h"
@@ -10,7 +11,6 @@
 #include "buf.h"
 #include "super.h"
 #include "const.h"
-#include <math.h>
 
 
 /*===========================================================================*
@@ -146,7 +146,7 @@ int computeExtFragInInode(struct super_block *sp, u32_t inode_no)
 
     put_inode(rip);
 
-    total_blocks_used   = ceil((double)rip->i_size/(sp->s_block_size));
+    total_blocks_used   = (double) ceil((double)rip->i_size/(sp->s_block_size));
     blocks_in_last_zone = total_blocks_used % blocksPerZone;
 
     if(blocks_in_last_zone != 0)
@@ -438,8 +438,9 @@ PUBLIC int fs_get_inode_blocks()
     struct inode *ip = NULL;
     struct super_block *sp = NULL;
     int total_blocks_used = 0;
+    long tot_blks;
     int i = 0;
-    
+ 
     block_count = 0;
     
     dev = (dev_t) fs_m_in.REQ_DEV;
@@ -456,13 +457,13 @@ PUBLIC int fs_get_inode_blocks()
      /* Update the blocks per zone global */
     blocksPerZone = 1 << (sp->s_log_zone_size);
 
-    total_blocks_used   = ceil((double)ip->i_size/(sp->s_block_size));
+      tot_blks  =(long) ((double)ip->i_size/(sp->s_block_size));
+      total_blocks_used = ceil(tot_blks) ; 
 
     /* Update the global data */
     block_count = total_blocks_used;
     scale       = sp->s_log_zone_size;
     EOF_reached = FALSE; 
-    col = 0;
 
     /* If no blocks are used by the file: Filesize = 0 */
     if(block_count==0) {
