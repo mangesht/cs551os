@@ -106,7 +106,6 @@ int blocksPerZone = 0;
 int EOF_reached = FALSE;
 int block_count = 0;
 int scale = 0;
-int col = 0;
 
 int printSuperBlock(struct super_block *sp);
 int computeExtFraginFS(struct super_block *sp);
@@ -400,18 +399,11 @@ int readDirectZone(u32_t zone_num, struct inode *ip)
     {
   	block_num = (zone_num << scale) + i;
   	bp = get_block(ip->i_dev, block_num, NORMAL); 
+    // Mangesh this can be optimized 
 
   	if(bp->b_dev == ip->i_dev)
 	{
   	    printf("[Block # %ld] ",bp->b_blocknr);
-	    col++;
-
-	    if(col==4){
-			printf("\n");
-			col=0;
-	    }
-	    else
-		printf("   ");
 
 	    /* Reduce the block count */
 	    block_count--;
@@ -437,8 +429,8 @@ int readDirectZone(u32_t zone_num, struct inode *ip)
     return (OK);
 }
 
-/* Handler for message REQ_GETBLOCKS */
-PUBLIC int fs_getblocks()
+/* Handler for message REQ_GETINODEBLOCKS */
+PUBLIC int fs_get_inode_blocks()
 {
     dev_t dev;
     ino_t in;
@@ -458,8 +450,8 @@ PUBLIC int fs_getblocks()
     
     if(DEBUG == 1)
     {
-	printf("MFS: Retrieve inode number : %d\n", in);
-	printf("MFS: Scale : %d\n",sp->s_log_zone_size);
+	    printf("MFS: Retrieve inode number : %d\n", in);
+    	printf("MFS: Scale : %d\n",sp->s_log_zone_size);
     }
      /* Update the blocks per zone global */
     blocksPerZone = 1 << (sp->s_log_zone_size);
@@ -473,9 +465,8 @@ PUBLIC int fs_getblocks()
     col = 0;
 
     /* If no blocks are used by the file: Filesize = 0 */
-    if(block_count==0) 
-    {
-	EOF_reached = TRUE;
+    if(block_count==0) {
+	    EOF_reached = TRUE;
         printf("\n\n++ No data disk blocks used by file\n");
     }
     
