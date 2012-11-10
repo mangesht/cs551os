@@ -1,0 +1,9 @@
+#Copies the files from prj_2 directory to individual source directories
+cp src/fs_tool_lib.c /usr/src/lib/libc/sys-minix/
+cp src/Makefile.inc /usr/src/lib/libc/sys-minix/
+cp src/callnr.h /usr/src/include/minix/ 
+cp src/fs_tool.c /usr/src/servers/vfs/
+cp src/table.c /usr/src/servers/vfs/
+cp src/proto.h /usr/src/servers/vfs/
+cp src/Makefile /usr/src/servers/vfs/
+
