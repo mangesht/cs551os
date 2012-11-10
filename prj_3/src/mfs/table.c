@@ -45,6 +45,6 @@ PUBLIC _PROTOTYPE (int (*fs_call_vec[]), (void) ) = {
         fs_getdents,	    /* 31  */
         fs_statvfs,         /* 32  */
 	 fs_getfrag,    /* 33 */
-	 fs_getblocks,       /* 34  */
+	 fs_get_inode_blocks,       /* 34  */
 };
 

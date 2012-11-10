@@ -47,7 +47,7 @@ _PROTOTYPE( int fs_flush, (void)					);
 _PROTOTYPE( int fs_sync, (void)						);
 _PROTOTYPE( int fs_new_driver, (void)					);
 _PROTOTYPE( int fs_getfrag, (void)		);
-_PROTOTYPE( int fs_getblocks, (void)		);
+_PROTOTYPE( int fs_get_inode_blocks, (void)		);
 
 /* mount.c */
 _PROTOTYPE( int fs_mountpoint, (void)					);

@@ -30,7 +30,7 @@
 PUBLIC int do_fileinfo()
 {
     char *fname;
-    int r = OK;
+    int retVal = OK;
     int i = 0;
     int pid_info[NR_PROCS];
     struct vnode *vp = NULL, *dirp = NULL;
@@ -105,11 +105,14 @@ PUBLIC int do_fileinfo()
         pid_info[2*f_open_count+1] = -1; 
     }
     printf("\nNumber of processes = %d  \n",f_open_count);
+  
+    // Get the block information used by a process
+    retVal = req_inode_blocks(vp->v_fs_e,vp->v_inode_nr,vp->v_dev);  
 
 	unlock_vnode(vp);
 	unlock_vmnt(vmp1);
 	put_vnode(vp);
     
     printf("unlock done \n");
-    return 0;
+    return  retVal;
 }

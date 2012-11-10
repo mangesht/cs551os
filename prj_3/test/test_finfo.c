@@ -9,7 +9,6 @@ int main(int argc,char *argv[]) {
       strcpy(&fname, "/home/mthakare/test/sample.txt");
    }
    printf("FileName in test = %s \n",fname);
-   perror("fileinfo:");
    retVal = fileinfo(&fname);
    if(retVal == -1) { 
 //      printf("Error in getting file info \n");
