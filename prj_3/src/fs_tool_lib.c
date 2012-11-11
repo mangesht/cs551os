@@ -4,7 +4,7 @@
 #include <lib.h>
 #include <unistd.h>
 
-PUBLIC int fileinfo(char *fname,int mode = 3) {
+PUBLIC int fileinfo(char *fname,int mode ) {
   message m;
   m.m1_i1 = strlen(fname) + 1 ; 
   m.m1_p1 = fname ;
