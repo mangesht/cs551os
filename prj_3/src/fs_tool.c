@@ -26,7 +26,7 @@
 #include <minix/vfsif.h>
 #include "vmnt.h"
 
-#define DEBUG 1
+#define DEBUG 0
 
 PUBLIC int do_fileinfo()
 {
@@ -86,7 +86,7 @@ PUBLIC int do_fileinfo()
                            printf("File is opened by \n");
                            printf("   PID\t\tMode\n");
                      }
-                     printf("%6d %8d ",rfp->fp_pid ,rfp->fp_filp[i]->filp_mode);
+                     printf("%6d %8d \n",rfp->fp_pid ,rfp->fp_filp[i]->filp_mode);
                      pid_info[2*f_open_count] = rfp->fp_pid;
                      pid_info[2*f_open_count+1] = rfp->fp_filp[i]->filp_mode;
 

@@ -1102,6 +1102,6 @@ PUBLIC int req_inode_blocks(endpoint_t fs_e , ino_t inode_nr,dev_t dev) {
     m.m_type = REQ_GETINODEBLOCKS;
     m.REQ_INODE_NR = inode_nr;
     m.REQ_DEV      = dev; 
-    printf("Sending request for inode_nr = %ld dev = %d \n",inode_nr , dev);
+   // printf("Sending request for inode_nr = %ld dev = %d \n",inode_nr , dev);
     return (fs_sendrec(fs_e,&m));
 }
