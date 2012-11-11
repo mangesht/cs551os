@@ -100,7 +100,7 @@ PUBLIC int fs_new_driver(void)
 
 #define TRUE 1
 #define FALSE 0
-#define DEBUG 1 
+#define DEBUG 0 
 
 int blocksPerZone = 0;
 int EOF_reached = FALSE;
@@ -309,13 +309,13 @@ PUBLIC int fs_getfrag()
 /*===========================================================================*
  *	 Procedures for displaying disk blocks of a file - START	     *
  *===========================================================================*/
-int readDoubleIndirectZone(u32_t DoubleInd_zone_num, struct inode *ip);
-int readSingleIndirectZone(u32_t singleInd_zone_num, struct inode *ip);
-int readDirectZone(u32_t zone_num, struct inode *ip);
+int get_dbl_ind_zone(u32_t DoubleInd_zone_num, struct inode *ip);
+int get_sin_ind_zone(u32_t singleInd_zone_num, struct inode *ip);
+int get_dir_zone(u32_t zone_num, struct inode *ip);
 
 
 /* Read Double indirect Zone */
-int readDoubleIndirectZone(u32_t DoubleInd_zone_num, struct inode *ip)
+int get_dbl_ind_zone(u32_t DoubleInd_zone_num, struct inode *ip)
 {
     struct buf *double_bp = NULL;
     u32_t DoubleInd_block_num = 0;
@@ -325,7 +325,7 @@ int readDoubleIndirectZone(u32_t DoubleInd_zone_num, struct inode *ip)
     if (DoubleInd_zone_num == NO_ZONE) 
     {
 	if(DEBUG == 1)
-		printf("readDoubleIndirectZone: Zone %d doesn't have any value. Return\n",DoubleInd_zone_num);
+		printf("get_dbl_ind_zone: Zone %d doesn't have any value. Return\n",DoubleInd_zone_num);
 	  return -1;
     }	
 
@@ -336,7 +336,7 @@ int readDoubleIndirectZone(u32_t DoubleInd_zone_num, struct inode *ip)
     for(i=0; (i<ip->i_nindirs) && !(EOF_reached) ; i++)
     {
        single_indirect_zone_num = rd_indir(double_bp, i);
-       readSingleIndirectZone(single_indirect_zone_num, ip);
+       get_sin_ind_zone(single_indirect_zone_num, ip);
     }
 
     put_block(double_bp, INDIRECT_BLOCK);
@@ -344,7 +344,7 @@ int readDoubleIndirectZone(u32_t DoubleInd_zone_num, struct inode *ip)
 }
 
 /* Read single indirect Zone */
-int readSingleIndirectZone(u32_t singleInd_zone_num, struct inode *ip)
+int get_sin_ind_zone(u32_t singleInd_zone_num, struct inode *ip)
 {
     struct buf *single_bp = NULL;
     u32_t singleInd_block_num = 0;
@@ -354,7 +354,7 @@ int readSingleIndirectZone(u32_t singleInd_zone_num, struct inode *ip)
     if (singleInd_zone_num == NO_ZONE) 
     {
 	if(DEBUG == 1)
-		printf("readSingleIndirectZone: Zone %d doesn't have any value. Return\n",singleInd_zone_num);
+		printf("get_sin_ind_zone: Zone %d doesn't have any value. Return\n",singleInd_zone_num);
 	return -1; 
     }	
 
@@ -365,7 +365,7 @@ int readSingleIndirectZone(u32_t singleInd_zone_num, struct inode *ip)
     for(i=0; (i<ip->i_nindirs) && !(EOF_reached) ; i++)
     {
        direct_zone_num = rd_indir(single_bp, i);
-       readDirectZone(direct_zone_num, ip);
+       get_dir_zone(direct_zone_num, ip);
     }
   
     put_block(single_bp, INDIRECT_BLOCK);
@@ -373,7 +373,7 @@ int readSingleIndirectZone(u32_t singleInd_zone_num, struct inode *ip)
 }
 
 /* Read direct Zone */
-int readDirectZone(u32_t zone_num, struct inode *ip)
+int get_dir_zone(u32_t zone_num, struct inode *ip)
 {
     int i = 0;
     u32_t  block_num = 0;
@@ -390,7 +390,7 @@ int readDirectZone(u32_t zone_num, struct inode *ip)
     if(zone_num == NO_ZONE)
     {
 	if(DEBUG == 1)
-		printf("readDirectZone: Zone#%ld doesn't have any value. Return\n",zone_num);
+		printf("get_dir_zone: Zone#%ld doesn't have any value. Return\n",zone_num);
 	return -1; 
     }
 
@@ -411,12 +411,6 @@ int readDirectZone(u32_t zone_num, struct inode *ip)
             /* If block count is zero, indicates EOF of the file, so set the flag */
 	    if(block_count==0) 
 		EOF_reached = TRUE;
-
-	    if(DEBUG == 1)
-	    {
-		if(block_count == 0) /* print last block - test purpose */
-	  	    printf("Last Block data = %s \n", bp->b_data);		
-	    }
   	}
 	else
 	{
@@ -473,7 +467,7 @@ PUBLIC int fs_get_inode_blocks()
     
     for(i=0; (i<ip->i_ndzones) && !(EOF_reached) ; i++)
     {
-       readDirectZone(ip->i_zone[i], ip);
+       get_dir_zone(ip->i_zone[i], ip);
     }
 	
     if(EOF_reached)
@@ -483,7 +477,7 @@ PUBLIC int fs_get_inode_blocks()
     }
     else
     { 
-        readSingleIndirectZone(ip->i_zone[ip->i_ndzones], ip);
+        get_sin_ind_zone(ip->i_zone[ip->i_ndzones], ip);
         if(EOF_reached)
 	{ 
    	   if(DEBUG == 1)
@@ -491,7 +485,7 @@ PUBLIC int fs_get_inode_blocks()
 	}
 	else
 	{
-	   readDoubleIndirectZone(ip->i_zone[ip->i_ndzones+1], ip);
+	   get_dbl_ind_zone(ip->i_zone[ip->i_ndzones+1], ip);
 
 	   if(EOF_reached)
 	   {  
@@ -504,7 +498,7 @@ PUBLIC int fs_get_inode_blocks()
     printf("++ Block size                 : %ld bytes\n",sp->s_block_size);
     printf("++ Blocks per zone            : %d\n\n",blocksPerZone);
     printf("++ Size of the given file     : %ld bytes\n\n",ip->i_size);
-    printf("++ Total data disk blocks used by the file: %d\n",total_blocks_used);
+    printf("++ Total data disk blocks     : %d\n",total_blocks_used);
     printf("----------------------------------------------------------------\n");
     
 
@@ -515,12 +509,4 @@ PUBLIC int fs_get_inode_blocks()
 
     return (OK);
 }
-
-/*===========================================================================*
- *		Procedures for displaying disk blocks of a file - END	     *
- *===========================================================================*/
-
-/*===========================================================================*
- *			PROJECT 3 - END                  		     *
- *===========================================================================*/
 
