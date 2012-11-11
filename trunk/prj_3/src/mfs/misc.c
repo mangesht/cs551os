@@ -100,7 +100,7 @@ PUBLIC int fs_new_driver(void)
 
 #define TRUE 1
 #define FALSE 0
-#define DEBUG 0 
+#define DEBUG 1 
 
 int blocksPerZone = 0;
 int EOF_reached = FALSE;
