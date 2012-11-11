@@ -7,6 +7,7 @@ cp src/table.c /usr/src/servers/vfs/
 cp src/proto.h /usr/src/servers/vfs/
 cp src/Makefile /usr/src/servers/vfs/
 cp src/request.c /usr/src/servers/vfs/
+cp src/misc.c /usr/src/servers/vfs/
 
 cp src/hgfs/table.c                 /usr/src/servers/hgfs/
 cp src/mfs/misc.c                   /usr/src/servers/mfs/
