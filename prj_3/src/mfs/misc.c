@@ -457,8 +457,8 @@ PUBLIC int fs_get_inode_blocks()
      /* Update the blocks per zone global */
     blocksPerZone = 1 << (sp->s_log_zone_size);
 
-      tot_blks  =(long) ((double)ip->i_size/(sp->s_block_size));
-      total_blocks_used = ceil(tot_blks) ; 
+     total_blocks_used  = ceil((double)ip->i_size/(sp->s_block_size));
+   //   total_blocks_used = ceil(tot_blks) ; 
 
     /* Update the global data */
     block_count = total_blocks_used;
