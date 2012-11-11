@@ -442,7 +442,7 @@ PUBLIC int fs_get_inode_blocks()
 
     sp = get_super(fs_dev);
     ip = get_inode(fs_dev, in);
-    
+    printf("\n"); 
     if(DEBUG == 1)
     {
 	    printf("MFS: Retrieve inode number : %d\n", in);

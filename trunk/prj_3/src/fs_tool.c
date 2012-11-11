@@ -45,7 +45,7 @@ PUBLIC int do_fileinfo()
     fname = (char *) malloc (256);
     sys_datacopy(m_in.m_source,m_in.m1_p1,VFS_PROC_NR,fname,250); 
     op_mode = m_in.m1_i2;
-    printf("Operation mode = %d \n",op_mode);
+    if(DEBUG) printf("Operation mode = %d \n",op_mode);
     if(DEBUG) printf("fileinfo: got filename = %s \n",fname);
     lookup_init(&resolve, fullpath, PATH_NOFLAGS, &vmp1, &vp);
     resolve.l_vmnt_lock = VMNT_WRITE;
@@ -75,7 +75,7 @@ PUBLIC int do_fileinfo()
 
     if(DEBUG) printf("v_fs_count = %d \n",vp->v_fs_count);
     int f_open_count ;
-    if(op_mode == 0 || (op_mode & 1) == 1 ) { 
+    if((op_mode & 0x1) == 1 ) { 
        f_open_count=  0 ;
        for(rfp =&fproc[0] ;rfp <&fproc[NR_PROCS];rfp++) {
            if(rfp->fp_pid == 0) continue ;
@@ -108,10 +108,10 @@ PUBLIC int do_fileinfo()
           pid_info[2*f_open_count+1] = -1; 
         }
         printf("---------------------------------------------");
-        printf("\nNumber of processes = %d  \n",f_open_count);
+        printf("\nNumber of processes using file = %d  \n",f_open_count);
         printf("---------------------------------------------");
     } 
-    if(op_mode & 2 == 2 ) {
+    if((op_mode & 0x2 ) == 2 ) {
         // Get the block information used by a process
         retVal = req_inode_blocks(vp->v_fs_e,vp->v_inode_nr,vp->v_dev);  
     }
