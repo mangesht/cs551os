@@ -26,7 +26,7 @@
 #include <minix/vfsif.h>
 #include "vmnt.h"
 
-#define DEBUG 0
+#define DEBUG 1
 
 PUBLIC int do_fileinfo()
 {
@@ -44,6 +44,8 @@ PUBLIC int do_fileinfo()
 //    struct mproc *rmp = NULL; 
     fname = (char *) malloc (256);
     sys_datacopy(m_in.m_source,m_in.m1_p1,VFS_PROC_NR,fname,250); 
+    op_mode = m_in.m1_i2;
+    printf("Operation mode = %d \n",op_mode);
     if(DEBUG) printf("fileinfo: got filename = %s \n",fname);
     lookup_init(&resolve, fullpath, PATH_NOFLAGS, &vmp1, &vp);
     resolve.l_vmnt_lock = VMNT_WRITE;
