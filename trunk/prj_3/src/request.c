@@ -28,7 +28,7 @@
 /*===========================================================================*
  *				req_frag         			     *
  *===========================================================================*/
-PUBLIC int req_frag(
+PUBLIC int req_extfrag(
 	endpoint_t fs_e
 )
 {
@@ -36,7 +36,7 @@ PUBLIC int req_frag(
   int r;
 
   /* Fill in request message */
-  m.m_type = REQ_FRAG;
+  m.m_type = REQ_EXTFRAG;
 
   /* Send/rec request */
 /*  printf("Sending a request to mfs \n"); */
