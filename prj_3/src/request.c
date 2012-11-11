@@ -26,6 +26,26 @@
 
 
 /*===========================================================================*
+ *				req_frag         			     *
+ *===========================================================================*/
+PUBLIC int req_frag(
+	endpoint_t fs_e
+)
+{
+  message m;
+  int r;
+
+  /* Fill in request message */
+  m.m_type = REQ_FRAG;
+
+  /* Send/rec request */
+/*  printf("Sending a request to mfs \n"); */
+  r = fs_sendrec(fs_e, &m);
+	
+  return(r);	
+}
+
+/*===========================================================================*
  *			req_breadwrite					     *
  *===========================================================================*/
 PUBLIC int req_breadwrite(
