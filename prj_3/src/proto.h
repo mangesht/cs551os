@@ -146,6 +146,7 @@ _PROTOTYPE( int do_getsysinfo, (void)					);
 _PROTOTYPE( int pm_dumpcore, (endpoint_t proc_e, int sig,
 				vir_bytes exe_name)			);
 _PROTOTYPE( void ds_event, (void)					);
+_PROTOTYPE( int do_extfrag, (void)				);
 
 /* mount.c */
 _PROTOTYPE( int do_fsready, (void)                                      );
