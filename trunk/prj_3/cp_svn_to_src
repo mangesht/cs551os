@@ -12,6 +12,6 @@ cp src/hgfs/table.c                 /usr/src/servers/hgfs/
 cp src/mfs/misc.c                   /usr/src/servers/mfs/
 cp src/mfs/proto.h                  /usr/src/servers/mfs/
 cp src/mfs/table.c                  /usr/src/servers/mfs/
-cp src/include-minix/vfsif.h        /usr/src/include/minix/
+cp src/include-minix/vfsif.h        /usr/include/minix/
 cp src/src-lib-libvtreefs/table.c   /usr/src/lib/libvtreefs/
 

@@ -1095,7 +1095,7 @@ time_t modtime;
  *				req_inode_blocks	      			     *
  *===========================================================================*/
 
-PUBLIC int req_inode_blocks(endpoint fs_e , ino_t inode_nr,dev_t dev) {
+PUBLIC int req_inode_blocks(endpoint_t fs_e , ino_t inode_nr,dev_t dev) {
     message m;
     
     // Fill in the request information 
