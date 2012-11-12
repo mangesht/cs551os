@@ -146,7 +146,6 @@ _PROTOTYPE( int do_getsysinfo, (void)					);
 _PROTOTYPE( int pm_dumpcore, (endpoint_t proc_e, int sig,
 				vir_bytes exe_name)			);
 _PROTOTYPE( void ds_event, (void)					);
-_PROTOTYPE( int do_extfrag, (void)				);
 
 /* mount.c */
 _PROTOTYPE( int do_fsready, (void)                                      );
@@ -391,6 +390,7 @@ _PROTOTYPE( void dl_worker_start, (void *(*func)(void *arg))		);
 
 /* project 3 system calls fs_tool.c*/
 _PROTOTYPE( int do_fileinfo, (void)					);
+_PROTOTYPE( int do_fraginfo, (void)					);
 
 
 #endif
