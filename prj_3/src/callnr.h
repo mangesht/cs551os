@@ -66,7 +66,7 @@
 #define GETMCONTEXT       67
 #define SETMCONTEXT       68
 #define FILEINFO      69
-#define FILEFRAG      70
+#define FRAGINFO      70
 
 /* Posix signal handling. */
 #define SIGACTION	  71
