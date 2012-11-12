@@ -123,3 +123,31 @@ PUBLIC int do_fileinfo()
     if(DEBUG) printf("unlock done \n");
     return  retVal;
 }
+
+
+
+
+/*===========================================================================*
+ *             do_externFrag - Handler for externfrag system call            *
+ *===========================================================================*/
+PUBLIC int do_fraginfo()
+{
+    struct vnode *vp;
+    char fileNameInput[200] = {0};
+    int r = OK;
+
+
+   // strcpy(fileNameInput, VPFILE);
+   // strcpy(user_fullpath,fileNameInput);
+
+    if ((vp = eat_path(PATH_NOFLAGS, fp)) == NULL) return(err_code);
+	
+    if(vp != NULL){
+	printf("\nEXTERNAL FRAGMENTATION IN FILE SYSTEM \n");
+	  printf("======================================\n\n");
+	r = req_extfrag(vp->v_fs_e);
+    }
+	
+    return r;
+}
+
