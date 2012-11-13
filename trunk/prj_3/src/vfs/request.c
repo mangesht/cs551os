@@ -1114,7 +1114,7 @@ PUBLIC int req_inode_blocks(endpoint_t fs_e , ino_t inode_nr,dev_t dev) {
 /*===========================================================================*
  *				req_frag         			     *
  *===========================================================================*/
-PUBLIC int req_extfrag(
+PUBLIC int req_frag(
 	endpoint_t fs_e
 )
 {
@@ -1125,7 +1125,7 @@ PUBLIC int req_extfrag(
   m.m_type = REQ_EXTFRAG;
 
   /* Send/rec request */
-/*  printf("Sending a request to mfs \n"); */
+ printf("Sending a request to mfs \n"); 
   r = fs_sendrec(fs_e, &m);
 	
   return(r);	
