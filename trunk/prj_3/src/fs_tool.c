@@ -26,7 +26,7 @@
 #include <minix/vfsif.h>
 #include "vmnt.h"
 
-#define DEBUG 0
+#define DEBUG 1
 
 PUBLIC int do_fileinfo()
 {
@@ -132,22 +132,38 @@ PUBLIC int do_fileinfo()
  *===========================================================================*/
 PUBLIC int do_fraginfo()
 {
-    struct vnode *vp;
-    char fileNameInput[200] = {0};
-    int r = OK;
+  
+   printf("RAJASIMHAN: inside frag");
+   
+
+    char *fname;
+    int retVal = OK;
+    int i = 0;
+    int pid_info[NR_PROCS];
+    struct vnode *vp = NULL, *dirp = NULL;
+    struct vmnt *vmp1 = NULL;
+    char fullpath[PATH_MAX];
+    struct lookup resolve;
+    int op_mode; 
+   
+    struct fproc *rfp = NULL;
+    fname = (char *) malloc (256);
+    sys_datacopy(m_in.m_source,m_in.m1_p1,VFS_PROC_NR,fname,250); 
+    op_mode = m_in.m1_i2;
+    if(DEBUG) printf("\n\n\n\n INSIDE VFS");
+    if(DEBUG) printf("\nOperation mode = %d \n",op_mode);
+    if(DEBUG) printf("\nfileinfo: got filename = %s \n",fname);
+    lookup_init(&resolve, fullpath, PATH_NOFLAGS, &vmp1, &vp);
+    resolve.l_vmnt_lock = VMNT_WRITE;
+    resolve.l_vnode_lock = VNODE_READ;
 
 
-   // strcpy(fileNameInput, VPFILE);
-   // strcpy(user_fullpath,fileNameInput);
+   if(DEBUG) printf("\nlookup done \n");
+   
+    if(fetch_name(m_in.name1,m_in.name1_length,M1,fullpath) != OK ) 
+        return (err_code);
+    if(DEBUG) printf("\nFullpath : %s \n",fullpath);
+   
 
-    if ((vp = eat_path(PATH_NOFLAGS, fp)) == NULL) return(err_code);
-	
-    if(vp != NULL){
-	printf("\nEXTERNAL FRAGMENTATION IN FILE SYSTEM \n");
-	  printf("======================================\n\n");
-	r = req_extfrag(vp->v_fs_e);
-    }
-	
-    return r;
 }
 
