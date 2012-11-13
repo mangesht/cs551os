@@ -19,6 +19,6 @@ PUBLIC int fraginfo(char *fname,int mode ) {
   m.m1_i1 = strlen(fname) + 1 ; 
   m.m1_p1 = fname ;
   m.m1_i2 = mode;
-  printf("In Lib : Getting fragmentation info for file %s Mode = %d \n",m.m1_p1,m.m1_i2); 
+  // printf("In Lib : Getting fragmentation info for file %s Mode = %d \n",m.m1_p1,m.m1_i2); 
   return(_syscall(VFS_PROC_NR,FRAGINFO,&m));
 }
