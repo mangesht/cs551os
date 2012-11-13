@@ -13,84 +13,6 @@
 #include "const.h"
 
 
-/*===========================================================================*
- *				fs_sync					     *
- *===========================================================================*/
-PUBLIC int fs_sync()
-{
-/* Perform the sync() system call.  Flush all the tables. 
- * The order in which the various tables are flushed is critical.  The
- * blocks must be flushed last, since rw_inode() leaves its results in
- * the block cache.
- */
-  struct inode *rip;
-  struct buf *bp;
-
-  assert(nr_bufs > 0);
-  assert(buf);
-
-  /* Write all the dirty inodes to the disk. */
-  for(rip = &inode[0]; rip < &inode[NR_INODES]; rip++)
-	  if(rip->i_count > 0 && IN_ISDIRTY(rip)) rw_inode(rip, WRITING);
-
-  /* Write all the dirty blocks to the disk, one drive at a time. */
-  for(bp = &buf[0]; bp < &buf[nr_bufs]; bp++)
-	  if(bp->b_dev != NO_DEV && ISDIRTY(bp)) 
-		  flushall(bp->b_dev);
-
-  return(OK);		/* sync() can't fail */
-}
-
-
-/*===========================================================================*
- *				fs_flush				     *
- *===========================================================================*/
-PUBLIC int fs_flush()
-{
-/* Flush the blocks of a device from the cache after writing any dirty blocks
- * to disk.
- */
-  dev_t dev = (dev_t) fs_m_in.REQ_DEV;
-  if(dev == fs_dev) return(EBUSY);
- 
-  flushall(dev);
-  invalidate(dev);
-
-  return(OK);
-}
-
-
-/*===========================================================================*
- *				fs_new_driver				     *
- *===========================================================================*/
-PUBLIC int fs_new_driver(void)
-{
-/* Set a new driver endpoint for this device. */
-  dev_t dev;
-  cp_grant_id_t label_gid;
-  size_t label_len;
-  char label[sizeof(fs_dev_label)];
-  int r;
-
-  dev = (dev_t) fs_m_in.REQ_DEV;
-  label_gid = (cp_grant_id_t) fs_m_in.REQ_GRANT;
-  label_len = (size_t) fs_m_in.REQ_PATH_LEN;
-
-  if (label_len > sizeof(label))
-	return(EINVAL);
-
-  r = sys_safecopyfrom(fs_m_in.m_source, label_gid, (vir_bytes) 0,
-	(vir_bytes) label, label_len, D);
-
-  if (r != OK) {
-	printf("MFS: fs_new_driver safecopyfrom failed (%d)\n", r);
-	return(EINVAL);
-  }
-
-  bdev_driver(dev, label);
-
-  return(OK);
-}
 
 
 /*===========================================================================*
@@ -100,7 +22,7 @@ PUBLIC int fs_new_driver(void)
 
 #define TRUE 1
 #define FALSE 0
-#define DEBUG 0 
+#define DEBUG 1 
 
 int blocksPerZone = 0;
 int EOF_reached = FALSE;
@@ -113,8 +35,31 @@ int computeExtFragInInode(struct super_block *sp, u32_t inode_no);
 
 
 /*===========================================================================*
- *				PROJECT 3 - Requirement 3 		     *
+ *				PROJECT 3		     *
  *===========================================================================*/
+
+
+/* Handler for message REQ_EXTFRAG */
+PUBLIC int fs_getfrag()
+{
+    struct super_block *sp = NULL;
+    if(DEBUG==1) printf("MFS: In mfs_extfragInfo \n");
+     sp = get_super(fs_dev);
+
+     /* Update the blocks per zone global */
+     blocksPerZone = 1 << (sp->s_log_zone_size);
+
+     computeExtFragInFS(sp);
+	 
+     if(DEBUG == 1)
+         printSuperBlock(sp);
+return 1;
+  /*   return(OK);  */
+}
+
+
+
+
 int printSuperBlock(struct super_block *sp)
 {
      printf("s_ninodes=%d \t s_nzones=%d \n", sp->s_ninodes,  sp->s_nzones);
@@ -282,26 +227,6 @@ int computeExtFragInFS(struct super_block *sp)
     return(OK); 
 }
 
-/* Handler for message REQ_EXTFRAG */
-PUBLIC int fs_getfrag()
-{
-     struct super_block *sp = NULL;
-
-     if(DEBUG == 1)
-	printf("MFS: In fs_extfragInfo \n");
-
-     sp = get_super(fs_dev);
-
-     /* Update the blocks per zone global */
-     blocksPerZone = 1 << (sp->s_log_zone_size);
-
-     computeExtFragInFS(sp);
-	 
-     if(DEBUG == 1)
-         printSuperBlock(sp);
-
-     return(OK); 
-}
 /*===========================================================================*
  *		Calculating degree of fragmentation - END  		     *
  *===========================================================================*/
@@ -508,5 +433,88 @@ PUBLIC int fs_get_inode_blocks()
 	printf("MFS: ***** END *****\n");
 
     return (OK);
+}
+
+
+
+
+
+/*===========================================================================*
+ *				fs_sync					     *
+ *===========================================================================*/
+PUBLIC int fs_sync()
+{
+/* Perform the sync() system call.  Flush all the tables. 
+ * The order in which the various tables are flushed is critical.  The
+ * blocks must be flushed last, since rw_inode() leaves its results in
+ * the block cache.
+ */
+  struct inode *rip;
+  struct buf *bp;
+
+  assert(nr_bufs > 0);
+  assert(buf);
+
+  /* Write all the dirty inodes to the disk. */
+  for(rip = &inode[0]; rip < &inode[NR_INODES]; rip++)
+	  if(rip->i_count > 0 && IN_ISDIRTY(rip)) rw_inode(rip, WRITING);
+
+  /* Write all the dirty blocks to the disk, one drive at a time. */
+  for(bp = &buf[0]; bp < &buf[nr_bufs]; bp++)
+	  if(bp->b_dev != NO_DEV && ISDIRTY(bp)) 
+		  flushall(bp->b_dev);
+
+  return(OK);		/* sync() can't fail */
+}
+
+
+/*===========================================================================*
+ *				fs_flush				     *
+ *===========================================================================*/
+PUBLIC int fs_flush()
+{
+/* Flush the blocks of a device from the cache after writing any dirty blocks
+ * to disk.
+ */
+  dev_t dev = (dev_t) fs_m_in.REQ_DEV;
+  if(dev == fs_dev) return(EBUSY);
+ 
+  flushall(dev);
+  invalidate(dev);
+
+  return(OK);
+}
+
+
+/*===========================================================================*
+ *				fs_new_driver				     *
+ *===========================================================================*/
+PUBLIC int fs_new_driver(void)
+{
+/* Set a new driver endpoint for this device. */
+  dev_t dev;
+  cp_grant_id_t label_gid;
+  size_t label_len;
+  char label[sizeof(fs_dev_label)];
+  int r;
+
+  dev = (dev_t) fs_m_in.REQ_DEV;
+  label_gid = (cp_grant_id_t) fs_m_in.REQ_GRANT;
+  label_len = (size_t) fs_m_in.REQ_PATH_LEN;
+
+  if (label_len > sizeof(label))
+	return(EINVAL);
+
+  r = sys_safecopyfrom(fs_m_in.m_source, label_gid, (vir_bytes) 0,
+	(vir_bytes) label, label_len, D);
+
+  if (r != OK) {
+	printf("MFS: fs_new_driver safecopyfrom failed (%d)\n", r);
+	return(EINVAL);
+  }
+
+  bdev_driver(dev, label);
+
+  return(OK);
 }
 
