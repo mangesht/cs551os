@@ -1,13 +1,15 @@
 #Copies the files from prj_3 directory to individual source directories
+
 cp src/fs_tool_lib.c /usr/src/lib/libc/sys-minix/
 cp src/Makefile.inc /usr/src/lib/libc/sys-minix/
 cp src/callnr.h /usr/src/include/minix/ 
+
 cp src/fs_tool.c /usr/src/servers/vfs/
 cp src/vfs/table.c /usr/src/servers/vfs/
 cp src/vfs/proto.h /usr/src/servers/vfs/
 cp src/Makefile /usr/src/servers/vfs/
 cp src/vfs/request.c /usr/src/servers/vfs/
-cp src/vfs/misc.c /usr/src/servers/vfs/
+
 
 cp src/hgfs/table.c                 /usr/src/servers/hgfs/
 cp src/mfs/misc.c                   /usr/src/servers/mfs/
