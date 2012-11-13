@@ -145,7 +145,8 @@ PUBLIC int do_fraginfo()
     char fullpath[PATH_MAX];
     struct lookup resolve;
     int op_mode; 
-   
+    int r;
+
     struct fproc *rfp = NULL;
     fname = (char *) malloc (256);
     sys_datacopy(m_in.m_source,m_in.m1_p1,VFS_PROC_NR,fname,250); 
@@ -158,12 +159,15 @@ PUBLIC int do_fraginfo()
     resolve.l_vnode_lock = VNODE_READ;
 
 
-   if(DEBUG) printf("\nlookup done \n");
-   
+
     if(fetch_name(m_in.name1,m_in.name1_length,M1,fullpath) != OK ) 
         return (err_code);
-    if(DEBUG) printf("\nFullpath : %s \n",fullpath);
-   
+    if(DEBUG) printf("\nFullpath : %s.",fullpath);  
+    if ((vp = eat_path(&resolve, fp)) == NULL) return(err_code);
+    if(DEBUG) printf("\neating done");
+	printf("\nEXTERNAL FRAGMENTATION IN FILE SYSTEM \n");
+	  printf("======================================\n\n");
+	r = req_frag(vp->v_fs_e);
 
 }
 
