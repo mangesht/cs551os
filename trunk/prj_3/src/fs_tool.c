@@ -26,7 +26,7 @@
 #include <minix/vfsif.h>
 #include "vmnt.h"
 
-#define DEBUG 1
+#define DEBUG 0
 
 PUBLIC int do_fileinfo()
 {
@@ -133,9 +133,6 @@ PUBLIC int do_fileinfo()
 PUBLIC int do_fraginfo()
 {
   
-   printf("RAJASIMHAN: inside frag");
-   
-
     char *fname;
     int retVal = OK;
     int i = 0;
@@ -166,7 +163,7 @@ PUBLIC int do_fraginfo()
     if ((vp = eat_path(&resolve, fp)) == NULL) return(err_code);
     if(DEBUG) printf("\neating done");
 	printf("\nEXTERNAL FRAGMENTATION IN FILE SYSTEM \n");
-	  printf("======================================\n\n");
+	printf("======================================\n\n");
 	r = req_frag(vp->v_fs_e);
 
 }
