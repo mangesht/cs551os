@@ -25,25 +25,6 @@
 #include "param.h"
 
 
-/*===========================================================================*
- *				req_frag         			     *
- *===========================================================================*/
-PUBLIC int req_extfrag(
-	endpoint_t fs_e
-)
-{
-  message m;
-  int r;
-
-  /* Fill in request message */
-  m.m_type = REQ_EXTFRAG;
-
-  /* Send/rec request */
-/*  printf("Sending a request to mfs \n"); */
-  r = fs_sendrec(fs_e, &m);
-	
-  return(r);	
-}
 
 /*===========================================================================*
  *			req_breadwrite					     *
@@ -1111,7 +1092,10 @@ time_t modtime;
   /* Send/rec request */
   return fs_sendrec(fs_e, &m);
 }
+
 /*===========================================================================*
+ *				PROJECT-3      			     *
+ *===========================================================================*
  *				req_inode_blocks	      			     *
  *===========================================================================*/
 
@@ -1124,4 +1108,25 @@ PUBLIC int req_inode_blocks(endpoint_t fs_e , ino_t inode_nr,dev_t dev) {
     m.REQ_DEV      = dev; 
    // printf("Sending request for inode_nr = %ld dev = %d \n",inode_nr , dev);
     return (fs_sendrec(fs_e,&m));
+}
+
+
+/*===========================================================================*
+ *				req_frag         			     *
+ *===========================================================================*/
+PUBLIC int req_extfrag(
+	endpoint_t fs_e
+)
+{
+  message m;
+  int r;
+
+  /* Fill in request message */
+  m.m_type = REQ_EXTFRAG;
+
+  /* Send/rec request */
+/*  printf("Sending a request to mfs \n"); */
+  r = fs_sendrec(fs_e, &m);
+	
+  return(r);	
 }
