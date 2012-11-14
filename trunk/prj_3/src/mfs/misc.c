@@ -474,6 +474,8 @@ void get_frag_for_dir_zone(u32_t zone_num,dev_t fs_dev, struct inode *ip,
      struct super_block *sp,int *blk_cnt) ;
 int tot_int_frag;
 int num_int_frag_entries;
+int min_frag_val ;
+int max_frag_val;
 
 /* Read Double indirect Zone */
 int get_dbl_ind_zone(u32_t DoubleInd_zone_num, struct inode *ip)
@@ -603,7 +605,7 @@ PUBLIC int fs_get_int_frag()
     inf_frag = (int) fs_m_in.REQ_COUNT;
     sp = get_super(fs_dev);
     ip = get_inode(fs_dev, in);
-    printf("Message int REQ_COUNT = %d \n",fs_m_in.REQ_COUNT);    
+    if(DEBUG) printf("Message int REQ_COUNT = %d \n",fs_m_in.REQ_COUNT);    
 
 
     printf("\n"); 
@@ -612,7 +614,7 @@ PUBLIC int fs_get_int_frag()
 	    printf("MFS: Retrieve inode number : %d\n", in);
     	printf("MFS: Scale : %d\n",sp->s_log_zone_size);
     }
-    printf(" File mode = %x \n",ip->i_mode);
+    if(DEBUG) printf(" File mode = %x \n",ip->i_mode);
      /* Update the blocks per zone global */
     blocksPerZone = 1 << (sp->s_log_zone_size);
     total_blocks_used  = ceil((double)ip->i_size/(sp->s_block_size));
@@ -625,10 +627,19 @@ PUBLIC int fs_get_int_frag()
        EOF_reached = TRUE;
        printf("\n\n++ No data disk blocks used by file\n");
     }
-    printf("Internal fragment selected inode = %d \n",in);
+    if(DEBUG) printf("Internal fragment selected inode = %d \n",in);
     tot_int_frag = 0 ; 
     num_int_frag_entries = 0 ;
+    min_frag_val = sp->s_block_size;
+    max_frag_val = 0;
     find_int_frag(dev,ip,sp);
+    printf("Internal fragmentation details \n");
+    printf("Number of Files               = %ld \n",num_int_frag_entries);
+    printf("Total internal fragmentation  = %ld  \n",tot_int_frag );
+    printf("Min internal fragmentation    = %ld  \n",min_frag_val );
+    printf("Max internal fragmentation    = %ld  \n",max_frag_val );
+    printf("Avg internal fragmentation    = %ld  \n",tot_int_frag/num_int_frag_entries );
+    
     printf("Total internal frag = %d \n",tot_int_frag );
     put_inode(ip);
 
@@ -658,7 +669,7 @@ PUBLIC int fs_get_inode_blocks()
     in = (ino_t) fs_m_in.REQ_INODE_NR;
     sp = get_super(fs_dev);
     ip = get_inode(fs_dev, in);
-    printf("Message int REQ_COUNT = %d \n",fs_m_in.REQ_COUNT);    
+    if(DEBUG) printf("Message int REQ_COUNT = %d \n",fs_m_in.REQ_COUNT);    
 
 
     printf("\n"); 
@@ -732,25 +743,28 @@ void find_int_frag(dev_t fs_dev, struct inode *ip,struct super_block *sp) {
     int int_frag_val; 
     static int times = 0 ;
     times++;
-    if(times > 10 ){
-       printf("ERROR:Exceed return \n");
-       return;
-    }
-    printf("Inside find_int_frag i_num = %d \n",ip->i_num);
+  //  if(times > 10 ){
+  //     printf("ERROR:Exceed return \n");
+ //      return;
+ //   }
+    if(DEBUG) printf("Inside find_int_frag i_num = %d \n",ip->i_num);
     total_blocks_used  = ceil((double)ip->i_size/(sp->s_block_size));
     blk_cnt = total_blocks_used ;
     if((ip->i_mode & I_TYPE) != I_DIRECTORY) {
        // This is a file
        int used_bytes;
-       printf("This is file ");
+       if(DEBUG) printf("This is file ");
        used_bytes = (ip->i_size % sp->s_block_size);
        int_frag_val = used_bytes == 0 ? 0 : sp->s_block_size - used_bytes ; 
        tot_int_frag += int_frag_val ; 
+       min_frag_val = int_frag_val < min_frag_val ? int_frag_val : min_frag_val ; 
+       max_frag_val = int_frag_val > max_frag_val ? int_frag_val : max_frag_val ; 
+
        num_int_frag_entries++;
-       printf("Int frag = %d \n",int_frag_val );
+       if(DEBUG) printf("Int frag = %d \n",int_frag_val );
     }else{
     for(i=0; (i<ip->i_ndzones) && blk_cnt>0; i++) { 
-        printf("Direct zone number = %d \n",i);
+        if(DEBUG) printf("Direct zone number = %d \n",i);
         get_frag_for_dir_zone(ip->i_zone[i],fs_dev,ip,sp,&blk_cnt);
     }
    }
@@ -764,7 +778,7 @@ void get_frag_for_dir_zone(u32_t zone_num,dev_t fs_dev, struct inode *ip,
      struct buf *bp; 
      struct direct *dp;
      struct inode *dir_inode;
-     printf("Inside get_frag_for_dir_zone blk_count = %d \n",*blk_cnt);
+     if(DEBUG) printf("Inside get_frag_for_dir_zone blk_count = %d \n",*blk_cnt);
      if(*blk_cnt == 0 ) { 
        return(OK); 
      }
@@ -774,24 +788,24 @@ void get_frag_for_dir_zone(u32_t zone_num,dev_t fs_dev, struct inode *ip,
       // Loop for number of blocks in a zone 
      for(i=0;(i< (1<<scale)) && *blk_cnt > 0 ;i++){
         block_num = (zone_num << scale + i);
-        printf("Block_num + %d \n",block_num);
+        if(DEBUG) printf("Block_num + %d \n",block_num);
   	    bp = get_block(ip->i_dev, block_num, NORMAL); 
         assert(bp != NULL);
-        printf("This block uses only %d \n",bp->b_bytes);
-        printf("This dir has %d entries \n",dp<&bp->b_dir[NR_DIR_ENTRIES(ip->i_sp->s_block_size)]);
+        if(DEBUG) printf("This block uses only %d \n",bp->b_bytes);
+        if(DEBUG) printf("This dir has %d entries \n",dp<&bp->b_dir[NR_DIR_ENTRIES(ip->i_sp->s_block_size)]);
         for(dc=0,dp=&bp->b_dir[0];dp<&bp->b_dir[NR_DIR_ENTRIES(ip->i_sp->s_block_size)]; dp++,dc++) { 
             if(dc < 2 ) { 
-                printf("Dot or dot dot please check inode %d \n",dp->mfs_d_ino);
+                if(DEBUG) printf("Dot or dot dot please check inode %d \n",dp->mfs_d_ino);
                 continue;
             }
             if((dp->mfs_d_ino< 2) || dp->mfs_d_ino == ip->i_num) continue ;
  
             dir_inode = get_inode(fs_dev, dp->mfs_d_ino);
-            printf("Doing rec call with inode num = %d = %d \n",dp->mfs_d_ino,dir_inode->i_num);
+            if(DEBUG) printf("Doing rec call with inode num = %d = %d \n",dp->mfs_d_ino,dir_inode->i_num);
             find_int_frag(fs_dev,dir_inode,sp);   
         } 
         *blk_cnt= *blk_cnt -1; 
-        printf("block count = %d ",*blk_cnt);
+        if(DEBUG) printf("block count = %d ",*blk_cnt);
   	    put_block(bp, FULL_DATA_BLOCK);
      }
 }
