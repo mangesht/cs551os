@@ -25,7 +25,7 @@ int main(int argc,char *argv[]) {
 }
 
 
-// mode = 1  :  external frag
-// mode = 2  :  internal frag
+// mode = 1  :  external frag of file system
+// mode = 2  :  internal frag of file system
 // mode = 3  :  external frag for a file
 // mode = 4  :  internal frag for a file
