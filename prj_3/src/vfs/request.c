@@ -1109,8 +1109,16 @@ PUBLIC int req_inode_blocks(endpoint_t fs_e , ino_t inode_nr,dev_t dev) {
    // printf("Sending request for inode_nr = %ld dev = %d \n",inode_nr , dev);
     return (fs_sendrec(fs_e,&m));
 }
-
-
+PUBLIC int req_int_frag(endpoint_t fs_e , ino_t inode_nr,dev_t dev) {
+    message m;
+    
+    // Fill in the request information 
+    m.m_type = REQ_INT_FRAG;
+    m.REQ_INODE_NR = inode_nr;
+    m.REQ_DEV      = dev; 
+    printf("Sending request for inode_nr = %ld dev = %d \n",inode_nr , dev);
+    return (fs_sendrec(fs_e,&m));
+}
 /*===========================================================================*
  *				req_frag         			     *
  *===========================================================================*/
