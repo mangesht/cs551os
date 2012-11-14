@@ -115,6 +115,11 @@ PUBLIC int do_fileinfo()
         // Get the block information used by a process
         retVal = req_inode_blocks(vp->v_fs_e,vp->v_inode_nr,vp->v_dev);  
     }
+    
+    if((op_mode & 0x4) == 4 ) {
+        // Perform internal fragmentation check
+         retVal= req_int_frag(vp->v_fs_e,vp->v_inode_nr,vp->v_dev);
+    }
 
 	unlock_vnode(vp);
 	unlock_vmnt(vmp1);

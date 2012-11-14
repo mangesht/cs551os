@@ -126,7 +126,8 @@ typedef struct {
 #define REQ_STATVFS	(VFS_BASE + 32)
 #define REQ_EXTFRAG		(VFS_BASE + 33)
 #define REQ_GETINODEBLOCKS	(VFS_BASE + 34)
-#define NREQS			    35
+#define REQ_INT_FRAG	(VFS_BASE + 35)
+#define NREQS			    36
 
 #define IS_VFS_RQ(type) (((type) & ~0xff) == VFS_BASE)
 
