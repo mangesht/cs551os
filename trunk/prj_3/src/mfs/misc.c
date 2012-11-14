@@ -66,8 +66,7 @@ int FraginFS(struct super_block *sp)
     float extFrag = 0.0;
 
     u32_t max_efrag = 1; 
-    u32_t min_efrag = 1; 
-    u32_t efrag_cntr = 1;
+    u32_t min_efrag = 0; 
     u32_t max_ifrag = 1; 
     u32_t min_ifrag = 1; 
     u32_t avg_ifrag = 1;
@@ -132,11 +131,11 @@ int FraginFS(struct super_block *sp)
 		           	        printf("----------------------------------------------------------------\n");
 					 printf("\nLargest External fragmentation = %ld",max_efrag);
 					 printf("\nLeast   External fragmentation = %ld",min_efrag);
-					 printf("\nAverage External fragmentation = %ld\n",TotalFragBlocks/efrag_cntr );
+					 printf("\nAverage External fragmentation = %ld\n",TotalFragBlocks / TotalBlocksInFS);
 					 
 					 printf("\nLargest Internal fragmentation = %ld",max_ifrag);
 					 printf("\nLeast   Internal fragmentation = %ld",min_ifrag);
-					 printf("\nAverage Internal fragmentation = %ld",TotalFragBlocks/efrag_cntr);
+					 printf("\nAverage Internal fragmentation = %ld",0);
 
 
 					 if(DEBUG == 1)
@@ -150,11 +149,10 @@ int FraginFS(struct super_block *sp)
 		   /* Add to total fragmentation by counting fragmentation in inodes */
 		   if(((k & (1 << i)) != 0) && (inodesScanned != 0)) 
 		   {
-					if(mm==1)printf("inside counter\n");
 		       if(DEBUG == 1)printf("MFS: checking  fragmentation in inodenumber (bit number #%ld)%ld\n",inodesScanned,b);
 		       tmpFragBlocks = FragInInode(sp, inodesScanned);
-               TotalFragBlocks += tmpFragBlocks;
-				efrag_cntr++;
+              	 TotalFragBlocks += tmpFragBlocks;
+
 			   if (tmpFragBlocks > max_efrag)max_efrag=tmpFragBlocks;
 			   if (tmpFragBlocks < min_efrag)min_efrag=tmpFragBlocks;
 	
