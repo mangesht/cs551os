@@ -65,11 +65,11 @@ int FraginFS(struct super_block *sp)
     char str[500] = {0};
     float extFrag = 0.0;
 
-    u32_t max_efrag = 1; 
+    u32_t max_efrag = 0; 
     u32_t min_efrag = 0; 
-    u32_t max_ifrag = 1; 
-    u32_t min_ifrag = 1; 
-    u32_t avg_ifrag = 1;
+    u32_t max_ifrag = 0; 
+    u32_t min_ifrag = 0; 
+    u32_t avg_ifrag = 0;
 
     unsigned word, bcount;
 
@@ -113,10 +113,11 @@ int FraginFS(struct super_block *sp)
 	   			/* Break out of loop if current validated exceeded total number of bit map bits */
                if (b >= map_bits)
                {
-	                 printf("\n----------------------------------------------------------------\n");
+
+ 					 printf("\n Block Details");
+	  	                      printf("\n ----------------------------------------------------------------\n");
 					 printf("Blocks per zone             = %d\n",blocksPerZone);
-					 printf("Block size                  = %d bytes\n",sp->s_block_size);
-					 
+					 printf("Block size                  = %d bytes\n",sp->s_block_size);					 
 					 if(DEBUG == 1) printf("inodes Scanned              = %ld\n",inodesScanned);
 					 printf("Total Zones in File System   = %ld\n",zone_map_bits);
 					 printf("Total Blocks In File System  = %ld\n\n",TotalBlocksInFS);
@@ -124,11 +125,9 @@ int FraginFS(struct super_block *sp)
 	
 					 /* X 100 to express in percentage */
 					 extFrag = ((float)TotalFragBlocks / TotalBlocksInFS)*100;
-					 sprintf(str, "%f", extFrag);
 
-					 printf("\n++  FRAGMENTATION in File System (percentage) = %s \%\n", str);
-					 printf("\External fragmentation = %ld",extFrag);
-		           	        printf("----------------------------------------------------------------\n");
+					 printf("\nExternal fragmentation in the File System (in %) = %f",extFrag);
+		           	        printf("\n----------------------------------------------------------------\n");
 					 printf("\nLargest External fragmentation = %ld",max_efrag);
 					 printf("\nLeast   External fragmentation = %ld",min_efrag);
 					 printf("\nAverage External fragmentation = %ld\n",TotalFragBlocks / TotalBlocksInFS);
