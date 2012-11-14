@@ -22,14 +22,14 @@
 
 #define TRUE 1
 #define FALSE 0
-#define DEBUG 1 
+#define DEBUG 0
 
 int blocksPerZone = 0;
 int EOF_reached = FALSE;
 int block_count = 0;
 int scale = 0;
 
-int printSuperBlock(struct super_block *sp);
+
 int computeExtFraginFS(struct super_block *sp);
 int computeExtFragInInode(struct super_block *sp, u32_t inode_no);
 
@@ -48,60 +48,11 @@ PUBLIC int fs_getfrag()
 
      /* Update the blocks per zone global */
      blocksPerZone = 1 << (sp->s_log_zone_size);
-
      computeExtFragInFS(sp);
-	 
-     if(DEBUG == 1)
-         printSuperBlock(sp);
-return 1;
-  /*   return(OK);  */
+     return 1;
 }
 
 
-
-
-int printSuperBlock(struct super_block *sp)
-{
-     printf("s_ninodes=%d \t s_nzones=%d \n", sp->s_ninodes,  sp->s_nzones);
-     printf("s_imap_blocks=%d \t s_zmap_blocks=%d \n", sp->s_imap_blocks,  sp->s_zmap_blocks);
-     printf("s_firstdatazone_old=%d \t s_log_zone_size=%d \n",  sp->s_firstdatazone_old ,  sp->s_log_zone_size);
-     printf("s_max_size=%ld \t s_zones=%d \n", sp->s_max_size,  sp->s_zones);
-
-     printf("s_block_size=%d \t s_inodes_per_block=%d \n", sp->s_block_size, sp->s_inodes_per_block);
-     printf("s_firstdatazone=%d \t s_dev=%d \n", sp->s_firstdatazone,  sp->s_dev);
-     printf("s_ndzones=%d \t s_nindirs=%d \n", sp->s_ndzones,  sp->s_nindirs);
-     printf("s_isearch=%d \t s_zsearch=%d \n", sp->s_isearch,  sp->s_zsearch);
-     printf("s_native=%d  \n", sp->s_native);
-}
-
-/* To compute fragmentation blocks in each inode */
-int computeExtFragInInode(struct super_block *sp, u32_t inode_no)
-{
-    struct inode *rip;
-    int total_blocks_used = 0;
-    int blocks_in_last_zone = 0;
-    int fragment_blocks = 0; 
-
-    rip = get_inode(fs_dev, (ino_t)inode_no);
-
-    if(!rip) {
-	    printf("MFS: Error: Invalid case: find_inode failed should not come here \n");
-	    return 0;
-    }
-
-    put_inode(rip);
-
-    total_blocks_used   = (double) ceil((double)rip->i_size/(sp->s_block_size));
-    blocks_in_last_zone = total_blocks_used % blocksPerZone;
-
-    if(blocks_in_last_zone != 0)
-	   fragment_blocks = blocksPerZone - blocks_in_last_zone; 
-
-    printf("For inode=%d, file size = %ld, total_blocks_used = %d, fragment_blocks = %d\n",
-	    inode_no,rip->i_size,total_blocks_used,fragment_blocks);
-        
-    return(fragment_blocks);
-}
 
 /* To compute the degree of fragmentation in the file system */
 int computeExtFragInFS(struct super_block *sp)
@@ -125,10 +76,16 @@ int computeExtFragInFS(struct super_block *sp)
     char str[500] = {0};
     float extFrag = 0.0;
 
+    u32_t max_efrag = 1; 
+    u32_t min_efrag = 1; 
+    u32_t avg_efrag = 1;
+    u32_t max_ifrag = 1; 
+    u32_t min_ifrag = 1; 
+    u32_t avg_ifrag = 1;
+
     unsigned word, bcount;
 
-    if(DEBUG == 1)
-	    printf("MFS: In computeExtFrag\n");
+    if(DEBUG == 1)printf("MFS: In computeExtFrag\n");
 	
     zone_map_bits =  (bit_t) (sp->s_zones - (sp->s_firstdatazone - 1));
     TotalBlocksInFS = zone_map_bits * blocksPerZone;
@@ -152,8 +109,8 @@ int computeExtFragInFS(struct super_block *sp)
 	bp = get_block(sp->s_dev, start_block + block, NORMAL);
 	wlim = &bp->b_bitmap[FS_BITMAP_CHUNKS(sp->s_block_size)];
 
-	printf("Inode bitmap Block #%d\n",block);
-	printf("=========================\n");
+	if(DEBUG==1 )printf("Inode bitmap Block #%d\n",block);
+	if(DEBUG==1 )printf("=========================\n");
 
 	/* Iterate over the words in block. */
 	for (wptr = &bp->b_bitmap[word]; wptr < wlim; wptr++) {
@@ -186,9 +143,16 @@ int computeExtFragInFS(struct super_block *sp)
 			 extFrag = ((float)TotalFragBlocks / TotalBlocksInFS)*100;
 			 sprintf(str, "%f", extFrag);
 
-			 printf("\n++ DEGREE OF EXTERNAL FRAGMENTATION in File System (percentage) = %s \%\n", str);
-                         printf("----------------------------------------------------------------\n");
+			 printf("\n++  FRAGMENTATION in File System (percentage) = %s \%\n", str);
+             printf("----------------------------------------------------------------\n");
+			 printf("Maximum External fragmentation = %ld",max_efrag);
+			 printf("Minimum External fragmentation = %ld",min_efrag);
+			 printf("Average External fragmentation = %ld",avg_efrag);
 			 
+			 printf("Maximum External fragmentation = %ld",max_ifrag);
+			 printf("Minimum External fragmentation = %ld",min_ifrag);
+			 printf("Average External fragmentation = %ld",avg_ifrag);
+
 
 			 if(DEBUG == 1)
 			 {
@@ -213,19 +177,38 @@ int computeExtFragInFS(struct super_block *sp)
       block++;
       
     }while (--bcount > 0);
-
-    if(DEBUG == 1)
-    {
-      /* Safe prints. Will be removed later. These prints should not come in any setup */
-      printf("MFS: should not come here check: inodesScanned=%ld\n",inodesScanned);
-      printf("MFS: should not come here check: TotalFragBlocks=%ld\n",TotalFragBlocks);
-      printf("MFS: should not come here check: Total number of inodes = %ld\n",sp->s_ninodes);
-      printf("MFS: should not come here check:  bit_blocks = %d, map bits=%ld\n",bit_blocks, map_bits);
-    }
-    /*panic("b < map_bits");*/
-
     return(OK); 
 }
+
+
+/* To compute fragmentation blocks in each inode */
+int computeExtFragInInode(struct super_block *sp, u32_t inode_no)
+{
+    struct inode *rip;
+    int total_blocks_used = 0;
+    int blocks_in_last_zone = 0;
+    int fragment_blocks = 0; 
+
+    rip = get_inode(fs_dev, (ino_t)inode_no);
+    if(!rip) {
+	    printf("MFS: Error: Invalid case: find_inode failed should not come here \n");
+	    return 0;
+    }
+
+    put_inode(rip);
+
+    total_blocks_used   = (double) ceil((double)rip->i_size/(sp->s_block_size));
+    blocks_in_last_zone = total_blocks_used % blocksPerZone;
+
+    if(blocks_in_last_zone != 0)
+	   fragment_blocks = blocksPerZone - blocks_in_last_zone; 
+
+    printf("For inode=%d, file size = %ld, total_blocks_used = %d, fragment_blocks = %d\n",
+	    inode_no,rip->i_size,total_blocks_used,fragment_blocks);
+        
+    return(fragment_blocks);
+}
+
 
 /*===========================================================================*
  *		Calculating degree of fragmentation - END  		     *
@@ -234,13 +217,13 @@ int computeExtFragInFS(struct super_block *sp)
 /*===========================================================================*
  *	 Procedures for displaying disk blocks of a file - START	     *
  *===========================================================================*/
-int get_dbl_ind_zone(u32_t DoubleInd_zone_num, struct inode *ip);
-int get_sin_ind_zone(u32_t singleInd_zone_num, struct inode *ip);
-int get_dir_zone(u32_t zone_num, struct inode *ip);
+int getDoubleIndirectZone(u32_t DoubleInd_zone_num, struct inode *ip);
+int getSingleIndirectZone(u32_t singleInd_zone_num, struct inode *ip);
+int getDirectZone(u32_t zone_num, struct inode *ip);
 
 
 /* Read Double indirect Zone */
-int get_dbl_ind_zone(u32_t DoubleInd_zone_num, struct inode *ip)
+int getDoubleIndirectZone(u32_t DoubleInd_zone_num, struct inode *ip)
 {
     struct buf *double_bp = NULL;
     u32_t DoubleInd_block_num = 0;
@@ -250,7 +233,7 @@ int get_dbl_ind_zone(u32_t DoubleInd_zone_num, struct inode *ip)
     if (DoubleInd_zone_num == NO_ZONE) 
     {
 	if(DEBUG == 1)
-		printf("get_dbl_ind_zone: Zone %d doesn't have any value. Return\n",DoubleInd_zone_num);
+		printf("getDoubleIndirectZone: Zone %d doesn't have any value. Return\n",DoubleInd_zone_num);
 	  return -1;
     }	
 
@@ -261,7 +244,7 @@ int get_dbl_ind_zone(u32_t DoubleInd_zone_num, struct inode *ip)
     for(i=0; (i<ip->i_nindirs) && !(EOF_reached) ; i++)
     {
        single_indirect_zone_num = rd_indir(double_bp, i);
-       get_sin_ind_zone(single_indirect_zone_num, ip);
+       getSingleIndirectZone(single_indirect_zone_num, ip);
     }
 
     put_block(double_bp, INDIRECT_BLOCK);
@@ -269,7 +252,7 @@ int get_dbl_ind_zone(u32_t DoubleInd_zone_num, struct inode *ip)
 }
 
 /* Read single indirect Zone */
-int get_sin_ind_zone(u32_t singleInd_zone_num, struct inode *ip)
+int getSingleIndirectZone(u32_t singleInd_zone_num, struct inode *ip)
 {
     struct buf *single_bp = NULL;
     u32_t singleInd_block_num = 0;
@@ -279,7 +262,7 @@ int get_sin_ind_zone(u32_t singleInd_zone_num, struct inode *ip)
     if (singleInd_zone_num == NO_ZONE) 
     {
 	if(DEBUG == 1)
-		printf("get_sin_ind_zone: Zone %d doesn't have any value. Return\n",singleInd_zone_num);
+		printf("getSingleIndirectZone: Zone %d doesn't have any value. Return\n",singleInd_zone_num);
 	return -1; 
     }	
 
@@ -290,7 +273,7 @@ int get_sin_ind_zone(u32_t singleInd_zone_num, struct inode *ip)
     for(i=0; (i<ip->i_nindirs) && !(EOF_reached) ; i++)
     {
        direct_zone_num = rd_indir(single_bp, i);
-       get_dir_zone(direct_zone_num, ip);
+       getDirectZone(direct_zone_num, ip);
     }
   
     put_block(single_bp, INDIRECT_BLOCK);
@@ -298,7 +281,7 @@ int get_sin_ind_zone(u32_t singleInd_zone_num, struct inode *ip)
 }
 
 /* Read direct Zone */
-int get_dir_zone(u32_t zone_num, struct inode *ip)
+int getDirectZone(u32_t zone_num, struct inode *ip)
 {
     int i = 0;
     u32_t  block_num = 0;
@@ -315,7 +298,7 @@ int get_dir_zone(u32_t zone_num, struct inode *ip)
     if(zone_num == NO_ZONE)
     {
 	if(DEBUG == 1)
-		printf("get_dir_zone: Zone#%ld doesn't have any value. Return\n",zone_num);
+		printf("getDirectZone: Zone#%ld doesn't have any value. Return\n",zone_num);
 	return -1; 
     }
 
@@ -328,7 +311,7 @@ int get_dir_zone(u32_t zone_num, struct inode *ip)
 
   	if(bp->b_dev == ip->i_dev)
 	{
-  	    printf("[Block # %ld] ",bp->b_blocknr);
+  	  if(DEBUG == 1) printf("[Block # %ld] ",bp->b_blocknr);
 
 	    /* Reduce the block count */
 	    block_count--;
@@ -392,7 +375,7 @@ PUBLIC int fs_get_inode_blocks()
     
     for(i=0; (i<ip->i_ndzones) && !(EOF_reached) ; i++)
     {
-       get_dir_zone(ip->i_zone[i], ip);
+       getDirectZone(ip->i_zone[i], ip);
     }
 	
     if(EOF_reached)
@@ -402,7 +385,7 @@ PUBLIC int fs_get_inode_blocks()
     }
     else
     { 
-        get_sin_ind_zone(ip->i_zone[ip->i_ndzones], ip);
+        getSingleIndirectZone(ip->i_zone[ip->i_ndzones], ip);
         if(EOF_reached)
 	{ 
    	   if(DEBUG == 1)
@@ -410,7 +393,7 @@ PUBLIC int fs_get_inode_blocks()
 	}
 	else
 	{
-	   get_dbl_ind_zone(ip->i_zone[ip->i_ndzones+1], ip);
+	   getDoubleIndirectZone(ip->i_zone[ip->i_ndzones+1], ip);
 
 	   if(EOF_reached)
 	   {  
@@ -431,7 +414,6 @@ PUBLIC int fs_get_inode_blocks()
 
     if(DEBUG == 1)
 	printf("MFS: ***** END *****\n");
-
     return (OK);
 }
 
