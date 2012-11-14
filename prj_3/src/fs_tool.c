@@ -162,8 +162,6 @@ PUBLIC int do_fraginfo()
     if(DEBUG) printf("\nFullpath : %s.",fullpath);  
     if ((vp = eat_path(&resolve, fp)) == NULL) return(err_code);
     if(DEBUG) printf("\neating done");
-	printf("\nEXTERNAL FRAGMENTATION IN FILE SYSTEM \n");
-	printf("======================================\n\n");
 	r = req_frag(vp->v_fs_e);
 
 }
