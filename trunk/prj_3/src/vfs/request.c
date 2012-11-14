@@ -1125,7 +1125,7 @@ PUBLIC int req_frag(
   m.m_type = REQ_EXTFRAG;
 
   /* Send/rec request */
- printf("Sending a request to mfs \n"); 
+ // printf("Sending a request to mfs \n"); 
   r = fs_sendrec(fs_e, &m);
 	
   return(r);	
