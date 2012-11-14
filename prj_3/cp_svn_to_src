@@ -18,5 +18,6 @@ cp src/mfs/table.c                  /usr/src/servers/mfs/
 cp src/mfs/Makefile                 /usr/src/servers/mfs/
 
 cp src/include-minix/vfsif.h        /usr/include/minix/
+cp src/include-minix/vfsif.h        /usr/src/include/minix/
 cp src/src-lib-libvtreefs/table.c   /usr/src/lib/libvtreefs/
 
