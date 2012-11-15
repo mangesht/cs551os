@@ -473,12 +473,13 @@ void find_int_frag(dev_t fs_dev, struct inode *ip,struct super_block *sp) ;
 void get_frag_for_dir_zone(u32_t zone_num,dev_t fs_dev, struct inode *ip,
      struct super_block *sp,int *blk_cnt) ;
 #define NUM_FRAG_BINS 8
-int tot_int_frag;
+long tot_int_frag;
 int num_int_frag_entries;
 int min_frag_val ;
 int max_frag_val;
 int num_dirs;
 int frag_stat[NUM_FRAG_BINS];
+long tot_blocks_used;
 
 /* Read Double indirect Zone */
 int get_dbl_ind_zone(u32_t DoubleInd_zone_num, struct inode *ip)
@@ -639,12 +640,13 @@ PUBLIC int fs_get_int_frag()
     min_frag_val = sp->s_block_size;
     max_frag_val = 0;
     num_dirs = 0; 
+    tot_blocks_used = 0 ; 
     for(i=0;i<NUM_FRAG_BINS;i++) { 
         frag_stat[i] = 0;
     }
     find_int_frag(dev,ip,sp);
     printf("Internal fragmentation details \n");
-    printf("Number of Files               = %ld \n",num_int_frag_entries);
+    printf("Number of Files               = %ld   Number of blocks used by FS = %ld \n",num_int_frag_entries-num_dirs,tot_blocks_used);
     printf("Number of Dirs                = %ld \n",num_dirs);
     printf("Total internal fragmentation  = %ld  \n",tot_int_frag );
     printf("Min internal fragmentation    = %ld  \n",min_frag_val );
@@ -652,11 +654,11 @@ PUBLIC int fs_get_int_frag()
     printf("Avg internal fragmentation    = %ld  \n",tot_int_frag/num_int_frag_entries );
    printf("------------------------------------------");
    printf(" Distribution of fragmented data \n");
+   printf("------------------------------------------");
    for(i=0;i<NUM_FRAG_BINS;i++){
-        printf("Bin %4d - %4d \t -> %d",(i*sp->s_block_size / NUM_FRAG_BINS), 
+        printf("Bin %4d - %4d \t -> %d\n",(i*sp->s_block_size / NUM_FRAG_BINS), 
             ((i+1)*sp->s_block_size / NUM_FRAG_BINS),
             frag_stat[i]);
-   printf("------------------------------------------");
    }
    
     
@@ -771,6 +773,7 @@ void find_int_frag(dev_t fs_dev, struct inode *ip,struct super_block *sp) {
     if(DEBUG) printf("Inside find_int_frag i_num = %d \n",ip->i_num);
     total_blocks_used  = ceil((double)ip->i_size/(sp->s_block_size));
     blk_cnt = total_blocks_used ;
+    tot_blocks_used += total_blocks_used ;
     if((ip->i_mode & I_TYPE) != I_DIRECTORY) {
        // This is a file
        if(DEBUG) printf("This is file ");
@@ -824,8 +827,8 @@ void get_frag_for_dir_zone(u32_t zone_num,dev_t fs_dev, struct inode *ip,
         if(DEBUG) printf("Block_num + %d \n",block_num);
   	    bp = get_block(ip->i_dev, block_num, NORMAL); 
         assert(bp != NULL);
-        printf("This block allocated only %d \n",bp->b_bytes);
-        printf("It uses = %ld \n",ip->i_size);
+        if(DEBUG) printf("This block allocated only %d \n",bp->b_bytes);
+        if(DEBUG) printf("It uses = %ld \n",ip->i_size);
         if(DEBUG) printf("This dir has %d entries \n",dp<&bp->b_dir[NR_DIR_ENTRIES(ip->i_sp->s_block_size)]);
         
         for(dc=0,dp=&bp->b_dir[0];dp<&bp->b_dir[NR_DIR_ENTRIES(ip->i_sp->s_block_size)]; dp++,dc++) { 
