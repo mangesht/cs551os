@@ -906,6 +906,7 @@ void get_frag_for_dir_zone(u32_t zone_num,dev_t fs_dev, struct inode *ip,
             dir_inode = get_inode(fs_dev, dp->mfs_d_ino);
             if(DEBUG) printf("Doing rec call with inode num = %d = %d \n",dp->mfs_d_ino,dir_inode->i_num);
             find_int_frag(fs_dev,dir_inode,sp);   
+            put_inode(dir_inode);
         } 
         *blk_cnt= *blk_cnt -1; 
         if(DEBUG) printf("block count = %d ",*blk_cnt);
