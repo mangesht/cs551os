@@ -119,24 +119,24 @@ int FraginFS(struct super_block *sp)
 					 printf("Blocks per zone             = %d\n",blocksPerZone);
 					 printf("Block size                  = %d bytes\n",sp->s_block_size);					 
 					 if(DEBUG == 1) printf("inodes Scanned              = %ld\n",inodesScanned);
-					 printf("Total Zones in File System   = %ld\n",zone_map_bits);
-					 printf("Total Blocks In File System  = %ld\n\n",TotalBlocksInFS);
-                    			 printf("Total Fragmentation Blocks   = %ld\n",TotalFragBlocks);
+					 printf("No of Zones in File System   = %ld\n",zone_map_bits);
+					 printf("No of Blocks In File System  = %ld\n\n",TotalBlocksInFS);
+                    			 printf("Total no of Fragmented Blocks   = %ld\n",TotalFragBlocks);
 	
 					 /* X 100 to express in percentage */
 					 extFrag = ((float)TotalFragBlocks / TotalBlocksInFS)*100;
 
 					 printf("\nExternal fragmentation  (in %) = %f",extFrag);
 		           	        printf("\n----------------------------------------------------------------\n");
-					 printf("\nLargest fragmentation = %ld",max_efrag);
-					 printf("\nLeast   fragmentation = %ld",min_efrag);
-					 printf("\nAverage fragmentation = %ld\n",TotalFragBlocks / TotalBlocksInFS);
+					 printf("\nLargest Fragmentation = %ld",max_efrag);
+					 printf("\nLeast   Fragmentation = %ld",min_efrag);
+					 printf("\nAverage Fragmentation = %ld\n",TotalFragBlocks / TotalBlocksInFS);
 					 
-					 printf("\Internal fragmentation  (in %) = %f",extFrag);
+					 printf("\Internal Fragmentation  (in %) = %f",extFrag);
 					 printf("\n----------------------------------------------------------------\n");
-					 printf("\nLargest fragmentation = %ld",max_ifrag);
-					 printf("\nLeast   fragmentation = %ld",min_ifrag);
-					 printf("\nAverage fragmentation = %ld",0);
+					 printf("\nLargest Fragmentation = %ld",max_ifrag);
+					 printf("\nLeast   Fragmentation = %ld",min_ifrag);
+					 printf("\nAverage Fragmentation = %ld",0);
 
 
 					 if(DEBUG == 1)
