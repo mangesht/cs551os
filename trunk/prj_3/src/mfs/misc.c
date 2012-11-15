@@ -472,6 +472,7 @@ int get_dir_zone(u32_t zone_num, struct inode *ip);
 void find_int_frag(dev_t fs_dev, struct inode *ip,struct super_block *sp) ;
 void get_frag_for_dir_zone(u32_t zone_num,dev_t fs_dev, struct inode *ip,
      struct super_block *sp,int *blk_cnt) ;
+int get_frag_sin_ind_zone(u32_t s_ind_zone_num,dev_t fs_dev,struct inode *ip, struct super_block *sp,int *blk_cnt);
 #define NUM_FRAG_BINS 8
 long tot_int_frag;
 int num_int_frag_entries;
@@ -803,7 +804,38 @@ void find_int_frag(dev_t fs_dev, struct inode *ip,struct super_block *sp) {
             
             get_frag_for_dir_zone(ip->i_zone[i],fs_dev,ip,sp,&blk_cnt);
        }
+       if(blk_cnt> 0) {
+           get_frag_sin_ind_zone(ip->i_zone[ip->i_ndzones],fs_dev,ip,sp,&blk_cnt);
+       }
+       
    }
+
+}
+int get_frag_sin_ind_zone(u32_t s_ind_zone_num,dev_t fs_dev,struct inode *ip, struct super_block *sp,int *blk_cnt){
+    struct buf *single_bp = NULL;
+    u32_t singleInd_block_num = 0;
+    int i = 0;
+    u32_t direct_zone_num = 0;
+
+    if (s_ind_zone_num == NO_ZONE) 
+    {
+	if(DEBUG == 1)
+		printf("get_sin_ind_zone: Zone %d doesn't have any value. Return\n",s_ind_zone_num);
+	return -1; 
+    }	
+
+    singleInd_block_num = s_ind_zone_num << scale;
+
+    single_bp = get_block(ip->i_dev, singleInd_block_num, NORMAL); 
+
+    for(i=0; (i<ip->i_nindirs) && *blk_cnt > 0 ; i++)
+    {
+       direct_zone_num = rd_indir(single_bp, i);
+       get_frag_for_dir_zone(direct_zone_num,fs_dev,ip,sp,blk_cnt );
+    }
+  
+    put_block(single_bp, INDIRECT_BLOCK);
+    return (OK); 
 
 }
 void get_frag_for_dir_zone(u32_t zone_num,dev_t fs_dev, struct inode *ip,
