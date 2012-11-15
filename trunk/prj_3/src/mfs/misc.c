@@ -162,7 +162,7 @@ int FraginFS(struct super_block *sp)
 	     }
 	}
     block++;
-      
+  	put_block(bp, FULL_DATA_BLOCK);
     }while (--bcount > 0);
     return(OK); 
 }
@@ -441,6 +441,7 @@ int computeExtFragInFS(struct super_block *sp)
 	}
 
       block++;
+    put_block( bp,FULL_DATA_BLOCK); 
       
     }while (--bcount > 0);
 
