@@ -652,9 +652,9 @@ PUBLIC int fs_get_int_frag()
     printf("Min internal fragmentation    = %ld  \n",min_frag_val );
     printf("Max internal fragmentation    = %ld  \n",max_frag_val );
     printf("Avg internal fragmentation    = %ld  \n",tot_int_frag/num_int_frag_entries );
-   printf("------------------------------------------");
+   printf("------------------------------------------\n");
    printf(" Distribution of fragmented data \n");
-   printf("------------------------------------------");
+   printf("------------------------------------------\n");
    for(i=0;i<NUM_FRAG_BINS;i++){
         printf("Bin %4d - %4d \t -> %d\n",(i*sp->s_block_size / NUM_FRAG_BINS), 
             ((i+1)*sp->s_block_size / NUM_FRAG_BINS),
@@ -787,22 +787,22 @@ void find_int_frag(dev_t fs_dev, struct inode *ip,struct super_block *sp) {
        frag_stat[(int)((int_frag_val * NUM_FRAG_BINS) / sp->s_block_size)]++; 
        if(DEBUG) printf("Int frag = %d \n",int_frag_val );
     }else{
-    for(i=0; (i<ip->i_ndzones) && blk_cnt>0; i++) { 
-       if(DEBUG) printf("Direct zone number = %d \n",i);
-
-       used_bytes = (ip->i_size % sp->s_block_size);
-       int_frag_val = used_bytes == 0 ? 0 : sp->s_block_size - used_bytes ; 
-       tot_int_frag += int_frag_val ; 
-       min_frag_val = int_frag_val < min_frag_val ? int_frag_val : min_frag_val ; 
-       max_frag_val = int_frag_val > max_frag_val ? int_frag_val : max_frag_val ; 
-
-       num_int_frag_entries++;
        num_dirs++;
-       frag_stat[(int)((int_frag_val * NUM_FRAG_BINS) / sp->s_block_size)]++; 
+       for(i=0; (i<ip->i_ndzones) && blk_cnt>0; i++) { 
+           if(DEBUG) printf("Direct zone number = %d \n",i);
 
-        
-        get_frag_for_dir_zone(ip->i_zone[i],fs_dev,ip,sp,&blk_cnt);
-    }
+           used_bytes = (ip->i_size % sp->s_block_size);
+           int_frag_val = used_bytes == 0 ? 0 : sp->s_block_size - used_bytes ; 
+           tot_int_frag += int_frag_val ; 
+           min_frag_val = int_frag_val < min_frag_val ? int_frag_val : min_frag_val ; 
+           max_frag_val = int_frag_val > max_frag_val ? int_frag_val : max_frag_val ; 
+
+           num_int_frag_entries++;
+           frag_stat[(int)((int_frag_val * NUM_FRAG_BINS) / sp->s_block_size)]++; 
+
+            
+            get_frag_for_dir_zone(ip->i_zone[i],fs_dev,ip,sp,&blk_cnt);
+       }
    }
 
 }
