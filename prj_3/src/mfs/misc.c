@@ -131,13 +131,6 @@ int FraginFS(struct super_block *sp)
 					 printf("\nLargest Fragmentation = %ld",max_efrag);
 					 printf("\nLeast   Fragmentation = %ld",min_efrag);
 					 printf("\nAverage Fragmentation = %ld\n",TotalFragBlocks / TotalBlocksInFS);
-					 
-					 printf("\Internal Fragmentation  (in %) = %f",extFrag);
-					 printf("\n----------------------------------------------------------------\n");
-					 printf("\nLargest Fragmentation = %ld",max_ifrag);
-					 printf("\nLeast   Fragmentation = %ld",min_ifrag);
-					 printf("\nAverage Fragmentation = %ld",0);
-
 
 					 if(DEBUG == 1)
 					 {
@@ -651,7 +644,7 @@ PUBLIC int fs_get_int_frag()
     find_int_frag(dev,ip,sp);
     printf("Internal fragmentation details \n");
     printf("Number of Files               = %ld   Number of blocks used by FS = %ld \n",num_int_frag_entries-num_dirs,tot_blocks_used);
-    printf("Number of Dirs                = %ld \n",num_dirs);
+    printf("Number of Dirs                = %ld Device Id = %d \n",num_dirs,dev);
     printf("Total internal fragmentation  = %ld  \n",tot_int_frag );
     printf("Min internal fragmentation    = %ld  \n",min_frag_val );
     printf("Max internal fragmentation    = %ld  \n",max_frag_val );
