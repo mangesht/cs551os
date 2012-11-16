@@ -654,7 +654,7 @@ PUBLIC int fs_get_int_frag()
    printf("------------------------------------------\n");
    for(i=0;i<NUM_FRAG_BINS;i++){
         printf("Bin %4d - %4d \t -> %d\n",(i*sp->s_block_size / NUM_FRAG_BINS), 
-            ((i+1)*sp->s_block_size / NUM_FRAG_BINS),
+            ((i+1)*sp->s_block_size / NUM_FRAG_BINS)-1,
             frag_stat[i]);
    }
    
