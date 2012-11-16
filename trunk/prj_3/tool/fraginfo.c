@@ -14,6 +14,8 @@ int debug_en = 0 ;
 int get_non_empty_line(int ,char **);
 void display_help(){
    printf("\n Usage : fraginfo [filename] [-i/-e] [-b] [-h] \n");
+   printf("     -i  : Selects Internal fragmentation for reporting\n");   
+   printf("     -e  : Selects External fragmentation for reporting\n");   
    printf("     -d  : Gets fragmentation info for complete FS\n");   
    printf("     -h  : gets the help how to use this tool \n"); 
 }
@@ -23,6 +25,8 @@ int main(int argc,char *argv[]) {
    int agcCount =1 ;
    int got_f_name;
    int got_opt;
+   int frag_selected = 0;
+   int int_ext = 0; // 0 for internal,  1 for external
    char *p;
    char *fname;
    p = (char *) malloc (256);
@@ -50,6 +54,26 @@ int main(int argc,char *argv[]) {
             display_help();
             return 0;
         }
+        if(strchr(p,'i') != NULL) {
+            //printf("Internal selected \n");
+            if(frag_selected == 1 ) { 
+                display_help();
+                return 0;
+            }
+            frag_selected = 1 ;
+            int_ext = 0;
+        }
+        if(strchr(p,'e') != NULL) {
+            //printf("External selected \n");
+            if(frag_selected == 1 ) { 
+                display_help();
+                return 0;
+            }
+            frag_selected = 1 ;
+            int_ext = 1;
+        }
+
+
         
      }else{
          // This must be filename
@@ -62,6 +86,7 @@ int main(int argc,char *argv[]) {
      }
      agcCount++;   
    } 
+   if(frag_selected == 0 || ( int_ext == 0 )) {
    if(got_f_name == 1) { 
        mode_i = 0x4 ;
        printf("Mode = %x \n",mode_i);
@@ -131,8 +156,8 @@ int main(int argc,char *argv[]) {
                    if(strcmp(cmd_list[0],"2") == 0 ) { 
                        continue;
                    }
-                   printf("NO Matched for %s +++++  %s \t",cmd_list[0],cmd_list[1]);
-                   printf("Hence running it \n"); 
+                   //printf("NO Matched for %s +++++  %s \t",cmd_list[0],cmd_list[1]);
+                   //printf("Hence running it \n"); 
                    strcpy(last_dev,cmd_list[0]);
                    mode_i = 0x4;
                    retVal = fileinfo(cmd_list[1],mode_i);
@@ -141,6 +166,14 @@ int main(int argc,char *argv[]) {
             }
          }
     }       
+    } else { 
+        // External fragmentation
+       retVal = fraginfo(fname,mode_i);
+       if(retVal == -1) { 
+          perror("fraginfo:");
+   }
+
+    }
 return 0;
 } 
 
