@@ -1,0 +1,27 @@
+.\" Man page for FragInfo System Call.
+.TH man 1 "16 Nov 2012" "1.0" "FragInfo man page"
+.SH NAME
+FragInfo system call.
+.SH DESCRIPTION
+Determine the amount of external and internal fragmentation in the file system which includes the largest, least and average unused storage for each type of fragmentation.
+.SH PROTOTYPE
+int do_fraginfo (void)
+.SH LIBRARY FUNC
+int req_extfrag(endpoint_t fs_e )
+.SH User INPUT
+Filename
+.SH RETURNS
+Success :  0
+.PP
+Failure : -1
+.SH EXCEPTION
+Zone number absent
+.SH Usage
+fraginfo [-i] [-e] [-d]
+.PP
+	-i:  Displays Internal fragmentation details
+.PP
+	-e: Displays External fragmentation details
+.PP
+	-d: Displays list of all devices.
+
