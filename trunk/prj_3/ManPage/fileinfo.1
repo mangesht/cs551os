@@ -1,0 +1,26 @@
+.\" Man page for FileInfo System Call.
+.TH man 1 "16 Nov 2012" "1.0" "FileInfo man page"
+.SH NAME
+FileInfo system call.
+.SH DESCRIPTION
+The system call returns either the list of all process that has this file opened and/or list of blocks on disk that contain this file depending on the option chosen. 
+.SH PROTOTYPE
+int do_fileinfo(void)
+.SH LIBRARY FUNC
+int fileinfo(char *fname,int mode )
+.SH User INPUT
+Filename
+.SH RETURNS
+Success :  0
+.PP
+Failure : -1
+.SH EXCEPTION
+Wrong option chosen by the user, File may not exist.
+.SH Usage
+fileinfo filename [-p] [-b] 
+.PP
+	-b : Displays only the block numbers of blocks occupied by the file on disk
+.PP
+	-p : Displays the list of pid's that has opened the file
+.PP
+	Default option:  Displays both the list of pid's that has opened this file and also the block numbers of the blocks of the file
