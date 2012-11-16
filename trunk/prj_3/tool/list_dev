@@ -1,0 +1,3 @@
+stat /  > /home/mthakare/dev1
+stat /*  >> /home/mthakare/dev1
+grep "" /home/mthakare/dev1  | awk '{print $1 " " $28 }'| sort | uniq > /home/mthakare/dev.ini 
