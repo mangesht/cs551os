@@ -12,10 +12,11 @@ The directory and file structure is
     - callnr.h
     - fs_tool.c
     - fs_tool_lib.c
-    - proto.h
-    - table.c
-    - request.c
     - Makefile
+    + vfs    
+        - request.c
+    	- proto.h
+    	- table.c
     +mfs
         - misc.c
         - proto.h
@@ -40,12 +41,17 @@ How to compile ?
 - ./cp_svn_to_src
 - ./compile
 The above command would create the new minix image that supports newly added system call for file system information tool.
-- Goto tool
+- Goto $PRJ/tool
 - make tool
 - make link
 
 How to invoke the calls ? 
 Your shell now supports fileinfo command with parameters -p -b -h and filename about which you want to get info.
+Ex: fileinfo /home/mthakare/ReadMe.txt
+fraginfo with options as [-i] for internal fragmentation ,[-e] for internal fragmentation
+
+Ex: fraginfo -i 
+Ex: fraginfo -e 
 
 Hope you find the information useful, for details please contact:
 mthakare@hawk.iit.edu
