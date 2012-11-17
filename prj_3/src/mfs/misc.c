@@ -477,7 +477,8 @@ int max_frag_val;
 int num_dirs;
 int frag_stat[NUM_FRAG_BINS];
 long tot_blocks_used;
-
+long last_block_num ;
+long starting_block_num ;
 /* Read Double indirect Zone */
 int get_dbl_ind_zone(u32_t DoubleInd_zone_num, struct inode *ip)
 {
@@ -567,7 +568,20 @@ int get_dir_zone(u32_t zone_num, struct inode *ip)
 
   	if(bp->b_dev == ip->i_dev)
 	{
-  	    printf("[Block # %ld] ",bp->b_blocknr);
+        if(last_block_num != bp->b_blocknr - 1){
+            if(starting_block_num == -1 ) {
+                // This is very first block 
+            }else{
+                if(starting_block_num == last_block_num) { 
+                    printf("Block # [%ld] ",last_block_num );
+                } else { 
+                    printf("Block # [%ld : %ld] ",starting_block_num,last_block_num );
+                }
+            }
+            starting_block_num = bp->b_blocknr;
+        }
+  	   // printf("[Block # %ld] ",bp->b_blocknr);
+        last_block_num = bp->b_blocknr; 
 
 	    /* Reduce the block count */
 	    block_count--;
@@ -689,7 +703,8 @@ PUBLIC int fs_get_inode_blocks()
     sp = get_super(fs_dev);
     ip = get_inode(fs_dev, in);
     if(DEBUG) printf("Message int REQ_COUNT = %d \n",fs_m_in.REQ_COUNT);    
-
+    starting_block_num = -1;
+    last_block_num = -2;
 
     printf("\n"); 
     if(DEBUG == 1)
@@ -739,6 +754,11 @@ PUBLIC int fs_get_inode_blocks()
                    if(DEBUG == 1) printf("MFS: EOF reached after double indirect zones\n");
                }
             }
+            }
+            if(starting_block_num == last_block_num) { 
+                printf("Block # [%ld] ",last_block_num );
+            } else { 
+                printf("Block # [%ld : %ld] ",starting_block_num,last_block_num );
             }
 
             printf("\n----------------------------------------------------------------\n");
