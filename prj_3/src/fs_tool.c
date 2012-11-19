@@ -168,6 +168,12 @@ PUBLIC int do_fraginfo()
     if ((vp = eat_path(&resolve, fp)) == NULL) return(err_code);
     if(DEBUG) printf("\neating done");
 	r = req_frag(vp->v_fs_e);
+    
+	unlock_vnode(vp);
+	unlock_vmnt(vmp1);
+	put_vnode(vp);
+    
+    return retVal;
 
 }
 
