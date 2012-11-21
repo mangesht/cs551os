@@ -1,6 +1,7 @@
 fileinfo -h 
 echo "Press enter to continue "
 read y
+clear
 echo "fileinfo using complete path "
 echo "Press enter to continue "
 read y
@@ -8,6 +9,7 @@ echo "fileinfo /home/mthakare/test/sam4095.txt"
 fileinfo /home/mthakare/test/sam4095.txt
 echo "Press enter to continue "
 read y
+clear
 echo "Fileinfo using only filename 2 block file"
 echo "cd /home/mthakare/test"
 cd /home/mthakare/test
@@ -17,6 +19,7 @@ echo "fileinfo sam4097.txt"
 fileinfo sam4097.txt
 echo "Press enter to continue "
 read y
+clear
 echo "Fileinfo of a big file " 
 fileinfo /home/mthakare/test/samBig.txt
 echo "Press enter to continue "
