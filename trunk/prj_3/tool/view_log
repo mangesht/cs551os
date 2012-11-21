@@ -1,0 +1,2 @@
+tail -n 100 /usr/log/messages | sed -e "s/^.*kernel://g" >/usr/log/l.tmp
+vim /usr/log/l.tmp +99 
